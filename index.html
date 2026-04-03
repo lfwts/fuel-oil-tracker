@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0f1a">
+    <title>鐕冩枡娌圭粺璁?/title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a0f1a;
+            --card: #1a2332;
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --gold: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+            --border: #2d3a4f;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+        .header {
+            background: linear-gradient(180deg, #111827 0%, transparent);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--gold), #b45309);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .logo-text { font-size: 18px; font-weight: 700; }
+        .logo-sub { font-size: 11px; color: var(--muted); }
+        
+        .tabs {
+            display: flex;
+            background: #111827;
+            margin: 12px 16px;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px 8px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .tab.active { background: var(--card); color: var(--gold); }
+        
+        .panel { display: none; padding: 16px; }
+        .panel.active { display: block; animation: in 0.2s ease; }
+        @keyframes in { from { opacity: 0; transform: translateY(8px); } }
+        
+        .section-title {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 16px 0 10px;
+        }
+        
+        .vehicle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .vehicle {
+            background: var(--card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .vehicle.selected { border-color: var(--gold); background: rgba(245,158,11,0.1); }
+        .vehicle-icon { font-size: 28px; margin-bottom: 6px; }
+        .vehicle-name { font-size: 14px; font-weight: 600; }
+        .vehicle-info { font-size: 10px; color: var(--muted); margin-top: 2px; }
+        
+        .type-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .type-tab {
+            flex: 1;
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .type-tab.active { background: var(--gold); color: #000; border-color: var(--gold); }
+        
+        .input-group { margin-bottom: 12px; }
+        .input-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; display: block; }
+        .input {
+            width: 100%;
+            padding: 12px;
+            background: #243044;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 16px;
+        }
+        .input:focus { outline: none; border-color: var(--gold); }
+        
+        .bucket-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .bucket-item {
+            background: #243044;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        .bucket-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+        .bucket-input {
+            width: 100%;
+            padding: 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .bucket-input:focus { outline: none; border-color: var(--gold); }
+        .bucket-unit { font-size: 10px; color: var(--muted); margin-top: 2px; }
+        
+        .meter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .meter-item {
+            background: #243044;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .meter-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-high { background: var(--gold); }
+        .dot-low { background: #3b82f6; }
+        .dot-bio { background: var(--green); }
+        .meter-input {
+            width: 100%;
+            padding: 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .meter-input:focus { outline: none; border-color: var(--gold); }
+        
+        .sale-item {
+            background: #243044;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+        .sale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .sale-num { font-size: 12px; color: var(--muted); font-weight: 600; }
+        .sale-del {
+            width: 24px; height: 24px;
+            background: var(--red);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .sale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .sale-grid .input { padding: 10px; font-size: 14px; }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--gold), #b45309);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-add {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            margin-top: 8px;
+        }
+        
+        .record-item {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--gold);
+        }
+        .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .record-date { font-size: 13px; font-weight: 600; }
+        .record-vehicle { font-size: 11px; color: var(--muted); }
+        .record-type { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+        .type-out { background: rgba(239,68,68,0.2); color: var(--red); }
+        .type-in { background: rgba(16,185,129,0.2); color: var(--green); }
+        .record-data { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 12px; text-align: center; }
+        .record-val { font-weight: 600; }
+        .record-lbl { color: var(--muted); font-size: 10px; }
+        
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .stat {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+        .stat-val { font-size: 24px; font-weight: 700; }
+        .stat-val.ok { color: var(--green); }
+        .stat-val.warn { color: var(--gold); }
+        .stat-val.err { color: var(--red); }
+        .stat-lbl { font-size: 11px; color: var(--muted); }
+        
+        .alert {
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .alert-ok { background: rgba(16,185,129,0.15); border: 1px solid var(--green); color: var(--green); }
+        .alert-warn { background: rgba(245,158,11,0.15); border: 1px solid var(--gold); color: var(--gold); }
+        .alert-err { background: rgba(239,68,68,0.15); border: 1px solid var(--red); color: var(--red); }
+        
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #111827;
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+        }
+        .bottom-bar .btn { margin-top: 0; }
+        
+        .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+        
+        .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .filter-row .input { padding: 10px; font-size: 14px; }
+        
+        .analysis-card {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+        .analysis-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+        .analysis-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .analysis-row:last-child { border-bottom: none; }
+        .analysis-lbl { color: var(--muted); }
+        .analysis-val { font-weight: 600; }
+        
+        @media (min-width: 768px) {
+            .bottom-bar { position: static; background: transparent; border: none; padding: 16px 0; }
+            body { padding-bottom: 0; max-width: 500px; margin: 0 auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">鉀?/div>
+            <div>
+                <div class="logo-text">鐕冩枡娌圭粺璁?/div>
+                <div class="logo-sub">璇樊鐩戞帶绯荤粺</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab active" data-tab="record">馃摑 鐧昏</button>
+        <button class="tab" data-tab="history">馃搵 璁板綍</button>
+        <button class="tab" data-tab="analysis">馃搳 鍒嗘瀽</button>
+    </div>
+    
+    <!-- 鐧昏闈㈡澘 -->
+    <div id="record-panel" class="panel active">
+        <div class="section-title">閫夋嫨杞﹁締</div>
+        <div class="vehicle-grid">
+            <div class="vehicle" data-v="鏂扮數杞? onclick="selVehicle(this)">
+                <div class="vehicle-icon">馃殯</div>
+                <div class="vehicle-name">鏂扮數杞?/div>
+                <div class="vehicle-info">3妗堵烽珮+浣?鐢?/div>
+            </div>
+            <div class="vehicle" data-v="鐢佃溅" onclick="selVehicle(this)">
+                <div class="vehicle-icon">馃殮</div>
+                <div class="vehicle-name">鐢佃溅</div>
+                <div class="vehicle-info">2妗堵烽珮+浣?/div>
+            </div>
+            <div class="vehicle" data-v="鏂拌溅" onclick="selVehicle(this)">
+                <div class="vehicle-icon">馃殫</div>
+                <div class="vehicle-name">鏂拌溅</div>
+                <div class="vehicle-info">3妗堵烽珮+浣?/div>
+            </div>
+        </div>
+        
+        <div class="section-title">璁板綍绫诲瀷</div>
+        <div class="type-tabs">
+            <div class="type-tab active" data-t="out" onclick="selType(this)">馃殮 鍑鸿溅</div>
+            <div class="type-tab" data-t="in" onclick="selType(this)">馃彔 鍥炶溅</div>
+        </div>
+        
+        <div class="section-title">鏃堕棿</div>
+        <div class="filter-row">
+            <input type="date" class="input" id="date">
+            <input type="time" class="input" id="time">
+        </div>
+        
+        <div class="section-title">妗跺埢搴︼紙鍗囷級</div>
+        <div class="bucket-grid" id="buckets"></div>
+        
+        <div class="section-title">娌硅〃鎬荤疮</div>
+        <div class="meter-grid" id="meters"></div>
+        
+        <div id="sales-section" style="display:none">
+            <div class="section-title">閿€鍞褰?/div>
+            <div id="sales"></div>
+            <button class="btn btn-add" onclick="addSale()">鉃?娣诲姞閿€鍞?/button>
+        </div>
+        
+        <div class="section-title">澶囨敞</div>
+        <textarea class="input" id="notes" rows="2" placeholder="鐗规畩鎯呭喌璇存槑..."></textarea>
+    </div>
+    
+    <!-- 璁板綍闈㈡澘 -->
+    <div id="history-panel" class="panel">
+        <div class="filter-row">
+            <select class="input" id="filter-v" onchange="loadRecords()">
+                <option value="">鍏ㄩ儴杞﹁締</option>
+                <option value="鏂扮數杞?>鏂扮數杞?/option>
+                <option value="鐢佃溅">鐢佃溅</option>
+                <option value="鏂拌溅">鏂拌溅</option>
+            </select>
+            <input type="date" class="input" id="filter-d" onchange="loadRecords()">
+        </div>
+        <div id="records"></div>
+    </div>
+    
+    <!-- 鍒嗘瀽闈㈡澘 -->
+    <div id="analysis-panel" class="panel">
+        <div class="filter-row">
+            <input type="date" class="input" id="start" onchange="analyze()">
+            <input type="date" class="input" id="end" onchange="analyze()">
+        </div>
+        <div id="analysis"></div>
+    </div>
+    
+    <div class="bottom-bar" id="bottom">
+        <button class="btn" onclick="save()">馃捑 淇濆瓨璁板綍</button>
+    </div>
+
+<script>
+const CFG = {
+    '鏂扮數杞?: { buckets: ['楂樺害娌?,'浣庡害娌?,'鐢熺墿娌?], meters: ['楂樺害娌硅〃','浣庡害娌硅〃','鐢熺墿娌硅〃'] },
+    '鐢佃溅': { buckets: ['楂樺害娌?,'浣庡害娌?], meters: ['楂樺害娌硅〃','浣庡害娌硅〃'] },
+    '鏂拌溅': { buckets: ['楂樺害娌?,'浣庡害娌?,'绌烘《'], meters: ['楂樺害娌硅〃','浣庡害娌硅〃'] }
+};
+
+let vehicle = null, type = 'out', saleCount = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    document.getElementById('date').value = now.toISOString().split('T')[0];
+    document.getElementById('time').value = now.toTimeString().slice(0,5);
+    
+    const weekAgo = new Date(now - 7*24*60*60*1000).toISOString().split('T')[0];
+    document.getElementById('start').value = weekAgo;
+    document.getElementById('end').value = now.toISOString().split('T')[0];
+    
+    document.querySelectorAll('.tab').forEach(t => {
+        t.onclick = () => {
+            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+            t.classList.add('active');
+            document.getElementById(t.dataset.tab + '-panel').classList.add('active');
+            document.getElementById('bottom').style.display = t.dataset.tab === 'record' ? 'block' : 'none';
+            if (t.dataset.tab === 'history') loadRecords();
+            if (t.dataset.tab === 'analysis') analyze();
+        };
+    });
+    
+    loadRecords();
+    analyze();
+});
+
+function selVehicle(el) {
+    document.querySelectorAll('.vehicle').forEach(v => v.classList.remove('selected'));
+    el.classList.add('selected');
+    vehicle = el.dataset.v;
+    renderBuckets();
+    renderMeters();
+}
+
+function selType(el) {
+    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    type = el.dataset.t;
+    document.getElementById('sales-section').style.display = type === 'in' ? 'block' : 'none';
+    if (type === 'out') {
+        saleCount = 0;
+        document.getElementById('sales').innerHTML = '';
+    }
+}
+
+function renderBuckets() {
+    if (!vehicle) return;
+    const cfg = CFG[vehicle];
+    document.getElementById('buckets').innerHTML = cfg.buckets.map((b,i) => `
+        <div class="bucket-item">
+            <div class="bucket-label">${b}</div>
+            <input type="number" class="bucket-input" id="b${i}" placeholder="0" max="1000">
+            <div class="bucket-unit">鍗?/div>
+        </div>
+    `).join('');
+}
+
+function renderMeters() {
+    if (!vehicle) return;
+    const cfg = CFG[vehicle];
+    const dots = ['dot-high','dot-low','dot-bio'];
+    document.getElementById('meters').innerHTML = cfg.meters.map((m,i) => `
+        <div class="meter-item">
+            <div class="meter-label"><span class="dot ${dots[i]}"></span>${m}</div>
+            <input type="number" class="meter-input" id="m${i}" placeholder="0" step="0.1">
+        </div>
+    `).join('');
+}
+
+function addSale() {
+    saleCount++;
+    document.getElementById('sales').innerHTML += `
+        <div class="sale-item" id="sale${saleCount}">
+            <div class="sale-header">
+                <span class="sale-num">閿€鍞?#${saleCount}</span>
+                <button class="sale-del" onclick="document.getElementById('sale${saleCount}').remove()">脳</button>
+            </div>
+            <div class="sale-grid">
+                <input type="text" class="input sc" placeholder="瀹㈡埛鍚?>
+                <select class="input st"><option>楂樺害娌?/option><option>浣庡害娌?/option><option>鐢熺墿娌?/option></select>
+                <input type="number" class="input sa" placeholder="鍗囨暟">
+                <input type="number" class="input sp" placeholder="鍗曚环">
+            </div>
+        </div>
+    `;
+}
+
+function save() {
+    if (!vehicle) return alert('璇峰厛閫夋嫨杞﹁締');
+    
+    const cfg = CFG[vehicle];
+    const buckets = cfg.buckets.map((b,i) => ({ oil: b, liters: +document.getElementById('b'+i)?.value || 0 }));
+    const meters = cfg.meters.map((m,i) => ({ meter: m, reading: +document.getElementById('m'+i)?.value || 0 }));
+    
+    const sales = [];
+    document.querySelectorAll('.sale-item').forEach(el => {
+        sales.push({
+            customer: el.querySelector('.sc')?.value || '',
+            oilType: el.querySelector('.st')?.value || '',
+            liters: +el.querySelector('.sa')?.value || 0,
+            price: +el.querySelector('.sp')?.value || 0
+        });
+    });
+    
+    const record = {
+        id: Date.now(),
+        vehicle, type,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        buckets, meters, sales,
+        notes: document.getElementById('notes').value
+    };
+    
+    const records = JSON.parse(localStorage.getItem('fuelRecords') || '[]');
+    records.push(record);
+    localStorage.setItem('fuelRecords', JSON.stringify(records));
+    
+    alert('淇濆瓨鎴愬姛锛?);
+    document.querySelectorAll('.bucket-input, .meter-input').forEach(i => i.value = '');
+    document.getElementById('notes').value = '';
+    document.getElementById('sales').innerHTML = '';
+    saleCount = 0;
+    
+    const now = new Date();
+    document.getElementById('time').value = now.toTimeString().slice(0,5);
+    loadRecords();
+}
+
+function loadRecords() {
+    const records = JSON.parse(localStorage.getItem('fuelRecords') || '[]');
+    const fv = document.getElementById('filter-v').value;
+    const fd = document.getElementById('filter-d').value;
+    
+    let filtered = records;
+    if (fv) filtered = filtered.filter(r => r.vehicle === fv);
+    if (fd) filtered = filtered.filter(r => r.date === fd);
+    filtered.sort((a,b) => new Date(b.date+' '+b.time) - new Date(a.date+' '+a.time));
+    
+    const el = document.getElementById('records');
+    if (!filtered.length) {
+        el.innerHTML = '<div class="empty"><div class="empty-icon">馃搵</div><div>鏆傛棤璁板綍</div></div>';
+        return;
+    }
+    
+    el.innerHTML = filtered.map(r => {
+        const total = r.buckets.reduce((s,b) => s + b.liters, 0);
+        const sales = r.sales.reduce((s,x) => s + x.liters, 0);
+        return `
+            <div class="record-item" onclick="showDetail(${r.id})">
+                <div class="record-header">
+                    <div>
+                        <div class="record-date">${r.date} ${r.time}</div>
+                        <div class="record-vehicle">${r.vehicle}</div>
+                    </div>
+                    <span class="record-type ${r.type === 'out' ? 'type-out' : 'type-in'}">${r.type === 'out' ? '鍑鸿溅' : '鍥炶溅'}</span>
+                </div>
+                <div class="record-data">
+                    <div><div class="record-val">${total}</div><div class="record-lbl">妗跺瓨(鍗?</div></div>
+                    <div><div class="record-val">${r.meters[0]?.reading.toFixed(1) || '-'}</div><div class="record-lbl">楂樺害琛?/div></div>
+                    <div><div class="record-val">${sales}</div><div class="record-lbl">閿€鍞?鍗?</div></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function showDetail(id) {
+    const records = JSON.parse(localStorage.getItem('fuelRecords') || '[]');
+    const r = records.find(x => x.id === id);
+    if (!r) return;
+    
+    let msg = `${r.date} ${r.time}\n${r.vehicle} - ${r.type === 'out' ? '鍑鸿溅' : '鍥炶溅'}\n\n妗跺埢搴?\n`;
+    r.buckets.forEach(b => msg += `${b.oil}: ${b.liters}鍗嘰n`);
+    msg += '\n娌硅〃:\n';
+    r.meters.forEach(m => msg += `${m.meter}: ${m.reading}\n`);
+    if (r.sales.length) {
+        msg += '\n閿€鍞?\n';
+        r.sales.forEach(s => msg += `${s.customer} - ${s.oilType} ${s.liters}鍗嘰n`);
+    }
+    if (r.notes) msg += '\n澶囨敞: ' + r.notes;
+    
+    if (confirm(msg + '\n\n鐐瑰嚮"纭畾"鍒犻櫎姝よ褰?)) {
+        const filtered = records.filter(x => x.id !== id);
+        localStorage.setItem('fuelRecords', JSON.stringify(filtered));
+        loadRecords();
+        analyze();
+    }
+}
+
+function analyze() {
+    const records = JSON.parse(localStorage.getItem('fuelRecords') || '[]');
+    const start = document.getElementById('start').value;
+    const end = document.getElementById('end').value;
+    
+    if (!start || !end) return;
+    
+    const filtered = records.filter(r => r.date >= start && r.date <= end);
+    const el = document.getElementById('analysis');
+    
+    if (!filtered.length) {
+        el.innerHTML = '<div class="empty"><div class="empty-icon">馃搳</div><div>鏃犳暟鎹?/div></div>';
+        return;
+    }
+    
+    const byVehicle = {};
+    ['鏂扮數杞?,'鐢佃溅','鏂拌溅'].forEach(v => {
+        const vr = filtered.filter(r => r.vehicle === v);
+        if (!vr.length) return;
+        
+        const byDate = {};
+        vr.forEach(r => {
+            if (!byDate[r.date]) byDate[r.date] = {};
+            byDate[r.date][r.type] = r;
+        });
+        
+        const results = [];
+        Object.entries(byDate).forEach(([d, pair]) => {
+            if (pair.out && pair.in) {
+                const outTotal = pair.out.buckets.reduce((s,b) => s + b.liters, 0);
+                const inTotal = pair.in.buckets.reduce((s,b) => s + b.liters, 0);
+                const sales = pair.in.sales.reduce((s,x) => s + x.liters, 0);
+                const err = outTotal - inTotal - sales;
+                results.push({ date: d, err, sales });
+            }
+        });
+        
+        if (results.length) {
+            const avgErr = results.reduce((s,x) => s + x.err, 0) / results.length;
+            const totalSales = results.reduce((s,x) => s + x.sales, 0);
+            byVehicle[v] = { results, avgErr, totalSales };
+        }
+    });
+    
+    let html = '';
+    Object.entries(byVehicle).forEach(([v, data]) => {
+        const status = Math.abs(data.avgErr) <= 20 ? 'ok' : Math.abs(data.avgErr) <= 50 ? 'warn' : 'err';
+        html += `
+            <div class="analysis-card">
+                <div class="analysis-title">馃殯 ${v}</div>
+                <div class="stats">
+                    <div class="stat"><div class="stat-val ${status}">${data.avgErr.toFixed(1)}</div><div class="stat-lbl">骞冲潎璇樊(鍗?</div></div>
+                    <div class="stat"><div class="stat-val ok">${data.totalSales.toFixed(0)}</div><div class="stat-lbl">閿€鍞悎璁?鍗?</div></div>
+                </div>
+                ${Math.abs(data.avgErr) > 20 ? `<div class="alert alert-${status}">${Math.abs(data.avgErr) > 50 ? '鈿狅笍' : '鈿?} 璇樊瓒呰繃姝ｅ父鑼冨洿(鈮?0鍗?</div>` : `<div class="alert alert-ok">鉁?璇樊姝ｅ父</div>`}
+                <div class="analysis-row"><span class="analysis-lbl">鏃ユ湡</span><span class="analysis-val">璇樊</span></div>
+                ${data.results.map(x => `<div class="analysis-row"><span class="analysis-lbl">${x.date}</span><span class="analysis-val">${x.err.toFixed(1)}鍗?/span></div>`).join('')}
+            </div>
+        `;
+    });
+    
+    el.innerHTML = html || '<div class="empty"><div class="empty-icon">馃搳</div><div>鏃犲畬鏁村嚭鍥炶溅閰嶅</div></div>';
+}
+</script>
+</body>
+</html>
