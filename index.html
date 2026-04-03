@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0a0f1a">
-    <title>鐕冩枡娌圭粺璁?/title>
+    <title>燃料油统计</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -307,84 +307,84 @@
 <body>
     <div class="header">
         <div class="logo">
-            <div class="logo-icon">鉀?/div>
+            <div class="logo-icon">⛽</div>
             <div>
-                <div class="logo-text">鐕冩枡娌圭粺璁?/div>
-                <div class="logo-sub">璇樊鐩戞帶绯荤粺</div>
+                <div class="logo-text">燃料油统计</div>
+                <div class="logo-sub">误差监控系统</div>
             </div>
         </div>
     </div>
     
     <div class="tabs">
-        <button class="tab active" data-tab="record">馃摑 鐧昏</button>
-        <button class="tab" data-tab="history">馃搵 璁板綍</button>
-        <button class="tab" data-tab="analysis">馃搳 鍒嗘瀽</button>
+        <button class="tab active" data-tab="record">📝 登记</button>
+        <button class="tab" data-tab="history">📋 记录</button>
+        <button class="tab" data-tab="analysis">📊 分析</button>
     </div>
     
-    <!-- 鐧昏闈㈡澘 -->
+    <!-- 登记面板 -->
     <div id="record-panel" class="panel active">
-        <div class="section-title">閫夋嫨杞﹁締</div>
+        <div class="section-title">选择车辆</div>
         <div class="vehicle-grid">
-            <div class="vehicle" data-v="鏂扮數杞? onclick="selVehicle(this)">
-                <div class="vehicle-icon">馃殯</div>
-                <div class="vehicle-name">鏂扮數杞?/div>
-                <div class="vehicle-info">3妗堵烽珮+浣?鐢?/div>
+            <div class="vehicle" data-v="新电车" onclick="selVehicle(this)">
+                <div class="vehicle-icon">🚛</div>
+                <div class="vehicle-name">新电车</div>
+                <div class="vehicle-info">3桶·高+低+生</div>
             </div>
-            <div class="vehicle" data-v="鐢佃溅" onclick="selVehicle(this)">
-                <div class="vehicle-icon">馃殮</div>
-                <div class="vehicle-name">鐢佃溅</div>
-                <div class="vehicle-info">2妗堵烽珮+浣?/div>
+            <div class="vehicle" data-v="电车" onclick="selVehicle(this)">
+                <div class="vehicle-icon">🚚</div>
+                <div class="vehicle-name">电车</div>
+                <div class="vehicle-info">2桶·高+低</div>
             </div>
-            <div class="vehicle" data-v="鏂拌溅" onclick="selVehicle(this)">
-                <div class="vehicle-icon">馃殫</div>
-                <div class="vehicle-name">鏂拌溅</div>
-                <div class="vehicle-info">3妗堵烽珮+浣?/div>
+            <div class="vehicle" data-v="新车" onclick="selVehicle(this)">
+                <div class="vehicle-icon">🚗</div>
+                <div class="vehicle-name">新车</div>
+                <div class="vehicle-info">3桶·高+低</div>
             </div>
         </div>
         
-        <div class="section-title">璁板綍绫诲瀷</div>
+        <div class="section-title">记录类型</div>
         <div class="type-tabs">
-            <div class="type-tab active" data-t="out" onclick="selType(this)">馃殮 鍑鸿溅</div>
-            <div class="type-tab" data-t="in" onclick="selType(this)">馃彔 鍥炶溅</div>
+            <div class="type-tab active" data-t="out" onclick="selType(this)">🚚 出车</div>
+            <div class="type-tab" data-t="in" onclick="selType(this)">🏠 回车</div>
         </div>
         
-        <div class="section-title">鏃堕棿</div>
+        <div class="section-title">时间</div>
         <div class="filter-row">
             <input type="date" class="input" id="date">
             <input type="time" class="input" id="time">
         </div>
         
-        <div class="section-title">妗跺埢搴︼紙鍗囷級</div>
+        <div class="section-title">桶刻度（升）</div>
         <div class="bucket-grid" id="buckets"></div>
         
-        <div class="section-title">娌硅〃鎬荤疮</div>
+        <div class="section-title">油表总累</div>
         <div class="meter-grid" id="meters"></div>
         
         <div id="sales-section" style="display:none">
-            <div class="section-title">閿€鍞褰?/div>
+            <div class="section-title">销售记录</div>
             <div id="sales"></div>
-            <button class="btn btn-add" onclick="addSale()">鉃?娣诲姞閿€鍞?/button>
+            <button class="btn btn-add" onclick="addSale()">➕ 添加销售</button>
         </div>
         
-        <div class="section-title">澶囨敞</div>
-        <textarea class="input" id="notes" rows="2" placeholder="鐗规畩鎯呭喌璇存槑..."></textarea>
+        <div class="section-title">备注</div>
+        <textarea class="input" id="notes" rows="2" placeholder="特殊情况说明..."></textarea>
     </div>
     
-    <!-- 璁板綍闈㈡澘 -->
+    <!-- 记录面板 -->
     <div id="history-panel" class="panel">
         <div class="filter-row">
             <select class="input" id="filter-v" onchange="loadRecords()">
-                <option value="">鍏ㄩ儴杞﹁締</option>
-                <option value="鏂扮數杞?>鏂扮數杞?/option>
-                <option value="鐢佃溅">鐢佃溅</option>
-                <option value="鏂拌溅">鏂拌溅</option>
+                <option value="">全部车辆</option>
+                <option value="新电车">新电车</option>
+                <option value="电车">电车</option>
+                <option value="新车">新车</option>
             </select>
             <input type="date" class="input" id="filter-d" onchange="loadRecords()">
         </div>
         <div id="records"></div>
     </div>
     
-    <!-- 鍒嗘瀽闈㈡澘 -->
+    <!-- 分析面板 -->
     <div id="analysis-panel" class="panel">
         <div class="filter-row">
             <input type="date" class="input" id="start" onchange="analyze()">
@@ -394,14 +394,14 @@
     </div>
     
     <div class="bottom-bar" id="bottom">
-        <button class="btn" onclick="save()">馃捑 淇濆瓨璁板綍</button>
+        <button class="btn" onclick="save()">💾 保存记录</button>
     </div>
 
 <script>
 const CFG = {
-    '鏂扮數杞?: { buckets: ['楂樺害娌?,'浣庡害娌?,'鐢熺墿娌?], meters: ['楂樺害娌硅〃','浣庡害娌硅〃','鐢熺墿娌硅〃'] },
-    '鐢佃溅': { buckets: ['楂樺害娌?,'浣庡害娌?], meters: ['楂樺害娌硅〃','浣庡害娌硅〃'] },
-    '鏂拌溅': { buckets: ['楂樺害娌?,'浣庡害娌?,'绌烘《'], meters: ['楂樺害娌硅〃','浣庡害娌硅〃'] }
+    '新电车': { buckets: ['高度油','低度油','生物油'], meters: ['高度油表','低度油表','生物油表'] },
+    '电车': { buckets: ['高度油','低度油'], meters: ['高度油表','低度油表'] },
+    '新车': { buckets: ['高度油','低度油','空桶'], meters: ['高度油表','低度油表'] }
 };
 
 let vehicle = null, type = 'out', saleCount = 0;
@@ -457,7 +457,7 @@ function renderBuckets() {
         <div class="bucket-item">
             <div class="bucket-label">${b}</div>
             <input type="number" class="bucket-input" id="b${i}" placeholder="0" max="1000">
-            <div class="bucket-unit">鍗?/div>
+            <div class="bucket-unit">升</div>
         </div>
     `).join('');
 }
@@ -479,21 +479,21 @@ function addSale() {
     document.getElementById('sales').innerHTML += `
         <div class="sale-item" id="sale${saleCount}">
             <div class="sale-header">
-                <span class="sale-num">閿€鍞?#${saleCount}</span>
-                <button class="sale-del" onclick="document.getElementById('sale${saleCount}').remove()">脳</button>
+                <span class="sale-num">销售 #${saleCount}</span>
+                <button class="sale-del" onclick="document.getElementById('sale${saleCount}').remove()">×</button>
             </div>
             <div class="sale-grid">
-                <input type="text" class="input sc" placeholder="瀹㈡埛鍚?>
-                <select class="input st"><option>楂樺害娌?/option><option>浣庡害娌?/option><option>鐢熺墿娌?/option></select>
-                <input type="number" class="input sa" placeholder="鍗囨暟">
-                <input type="number" class="input sp" placeholder="鍗曚环">
+                <input type="text" class="input sc" placeholder="客户名">
+                <select class="input st"><option>高度油</option><option>低度油</option><option>生物油</option></select>
+                <input type="number" class="input sa" placeholder="升数">
+                <input type="number" class="input sp" placeholder="单价">
             </div>
         </div>
     `;
 }
 
 function save() {
-    if (!vehicle) return alert('璇峰厛閫夋嫨杞﹁締');
+    if (!vehicle) return alert('请先选择车辆');
     
     const cfg = CFG[vehicle];
     const buckets = cfg.buckets.map((b,i) => ({ oil: b, liters: +document.getElementById('b'+i)?.value || 0 }));
@@ -522,7 +522,7 @@ function save() {
     records.push(record);
     localStorage.setItem('fuelRecords', JSON.stringify(records));
     
-    alert('淇濆瓨鎴愬姛锛?);
+    alert('保存成功！');
     document.querySelectorAll('.bucket-input, .meter-input').forEach(i => i.value = '');
     document.getElementById('notes').value = '';
     document.getElementById('sales').innerHTML = '';
@@ -545,7 +545,7 @@ function loadRecords() {
     
     const el = document.getElementById('records');
     if (!filtered.length) {
-        el.innerHTML = '<div class="empty"><div class="empty-icon">馃搵</div><div>鏆傛棤璁板綍</div></div>';
+        el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div>暂无记录</div></div>';
         return;
     }
     
@@ -559,12 +559,12 @@ function loadRecords() {
                         <div class="record-date">${r.date} ${r.time}</div>
                         <div class="record-vehicle">${r.vehicle}</div>
                     </div>
-                    <span class="record-type ${r.type === 'out' ? 'type-out' : 'type-in'}">${r.type === 'out' ? '鍑鸿溅' : '鍥炶溅'}</span>
+                    <span class="record-type ${r.type === 'out' ? 'type-out' : 'type-in'}">${r.type === 'out' ? '出车' : '回车'}</span>
                 </div>
                 <div class="record-data">
-                    <div><div class="record-val">${total}</div><div class="record-lbl">妗跺瓨(鍗?</div></div>
-                    <div><div class="record-val">${r.meters[0]?.reading.toFixed(1) || '-'}</div><div class="record-lbl">楂樺害琛?/div></div>
-                    <div><div class="record-val">${sales}</div><div class="record-lbl">閿€鍞?鍗?</div></div>
+                    <div><div class="record-val">${total}</div><div class="record-lbl">桶存(升)</div></div>
+                    <div><div class="record-val">${r.meters[0]?.reading.toFixed(1) || '-'}</div><div class="record-lbl">高度表</div></div>
+                    <div><div class="record-val">${sales}</div><div class="record-lbl">销售(升)</div></div>
                 </div>
             </div>
         `;
@@ -576,17 +576,17 @@ function showDetail(id) {
     const r = records.find(x => x.id === id);
     if (!r) return;
     
-    let msg = `${r.date} ${r.time}\n${r.vehicle} - ${r.type === 'out' ? '鍑鸿溅' : '鍥炶溅'}\n\n妗跺埢搴?\n`;
-    r.buckets.forEach(b => msg += `${b.oil}: ${b.liters}鍗嘰n`);
-    msg += '\n娌硅〃:\n';
+    let msg = `${r.date} ${r.time}\n${r.vehicle} - ${r.type === 'out' ? '出车' : '回车'}\n\n桶刻度:\n`;
+    r.buckets.forEach(b => msg += `${b.oil}: ${b.liters}升\n`);
+    msg += '\n油表:\n';
     r.meters.forEach(m => msg += `${m.meter}: ${m.reading}\n`);
     if (r.sales.length) {
-        msg += '\n閿€鍞?\n';
-        r.sales.forEach(s => msg += `${s.customer} - ${s.oilType} ${s.liters}鍗嘰n`);
+        msg += '\n销售:\n';
+        r.sales.forEach(s => msg += `${s.customer} - ${s.oilType} ${s.liters}升\n`);
     }
-    if (r.notes) msg += '\n澶囨敞: ' + r.notes;
+    if (r.notes) msg += '\n备注: ' + r.notes;
     
-    if (confirm(msg + '\n\n鐐瑰嚮"纭畾"鍒犻櫎姝よ褰?)) {
+    if (confirm(msg + '\n\n点击"确定"删除此记录')) {
         const filtered = records.filter(x => x.id !== id);
         localStorage.setItem('fuelRecords', JSON.stringify(filtered));
         loadRecords();
@@ -605,12 +605,12 @@ function analyze() {
     const el = document.getElementById('analysis');
     
     if (!filtered.length) {
-        el.innerHTML = '<div class="empty"><div class="empty-icon">馃搳</div><div>鏃犳暟鎹?/div></div>';
+        el.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div>无数据</div></div>';
         return;
     }
     
     const byVehicle = {};
-    ['鏂扮數杞?,'鐢佃溅','鏂拌溅'].forEach(v => {
+    ['新电车','电车','新车'].forEach(v => {
         const vr = filtered.filter(r => r.vehicle === v);
         if (!vr.length) return;
         
@@ -643,19 +643,19 @@ function analyze() {
         const status = Math.abs(data.avgErr) <= 20 ? 'ok' : Math.abs(data.avgErr) <= 50 ? 'warn' : 'err';
         html += `
             <div class="analysis-card">
-                <div class="analysis-title">馃殯 ${v}</div>
+                <div class="analysis-title">🚛 ${v}</div>
                 <div class="stats">
-                    <div class="stat"><div class="stat-val ${status}">${data.avgErr.toFixed(1)}</div><div class="stat-lbl">骞冲潎璇樊(鍗?</div></div>
-                    <div class="stat"><div class="stat-val ok">${data.totalSales.toFixed(0)}</div><div class="stat-lbl">閿€鍞悎璁?鍗?</div></div>
+                    <div class="stat"><div class="stat-val ${status}">${data.avgErr.toFixed(1)}</div><div class="stat-lbl">平均误差(升)</div></div>
+                    <div class="stat"><div class="stat-val ok">${data.totalSales.toFixed(0)}</div><div class="stat-lbl">销售合计(升)</div></div>
                 </div>
-                ${Math.abs(data.avgErr) > 20 ? `<div class="alert alert-${status}">${Math.abs(data.avgErr) > 50 ? '鈿狅笍' : '鈿?} 璇樊瓒呰繃姝ｅ父鑼冨洿(鈮?0鍗?</div>` : `<div class="alert alert-ok">鉁?璇樊姝ｅ父</div>`}
-                <div class="analysis-row"><span class="analysis-lbl">鏃ユ湡</span><span class="analysis-val">璇樊</span></div>
-                ${data.results.map(x => `<div class="analysis-row"><span class="analysis-lbl">${x.date}</span><span class="analysis-val">${x.err.toFixed(1)}鍗?/span></div>`).join('')}
+                ${Math.abs(data.avgErr) > 20 ? `<div class="alert alert-${status}">${Math.abs(data.avgErr) > 50 ? '⚠️' : '⚡'} 误差超过正常范围(≤20升)</div>` : `<div class="alert alert-ok">✅ 误差正常</div>`}
+                <div class="analysis-row"><span class="analysis-lbl">日期</span><span class="analysis-val">误差</span></div>
+                ${data.results.map(x => `<div class="analysis-row"><span class="analysis-lbl">${x.date}</span><span class="analysis-val">${x.err.toFixed(1)}升</span></div>`).join('')}
             </div>
         `;
     });
     
-    el.innerHTML = html || '<div class="empty"><div class="empty-icon">馃搳</div><div>鏃犲畬鏁村嚭鍥炶溅閰嶅</div></div>';
+    el.innerHTML = html || '<div class="empty"><div class="empty-icon">📊</div><div>无完整出回车配对</div></div>';
 }
 </script>
 </body>
