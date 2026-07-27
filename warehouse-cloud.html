@@ -208,7 +208,7 @@
 const SUPABASE_URL = 'https://xtwirqahbthencfeqczr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0d2lycWFoYnRoZW5jZmVxY3pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxMjg0NTcsImV4cCI6MjEwMDcwNDQ1N30.RumLwT0WhYccjstZ6_mrDvt4OzQc0IXy-x3GPCYekuM';
 
-let supabase = null;
+let db = null;
 let categories = [];
 let persons = [];
 let parts = [];
@@ -224,7 +224,7 @@ async function init() {
     console.log('1. 初始化开始');
     try {
         console.log('2. 创建 supabase client');
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('3. client 已创建');
         
         console.log('4. 加载数据...');
@@ -246,25 +246,25 @@ async function init() {
 
 async function loadData() {
     console.log('加载分类...');
-    const { data: catData, error: catErr } = await supabase.from('categories').select('*').order('id');
+    const { data: catData, error: catErr } = await db.from('categories').select('*').order('id');
     if (catErr) throw new Error('分类加载失败: ' + catErr.message);
     categories = catData || [];
     console.log('分类:', categories.length);
     
     console.log('加载人员...');
-    const { data: personData, error: personErr } = await supabase.from('persons').select('*').order('id');
+    const { data: personData, error: personErr } = await db.from('persons').select('*').order('id');
     if (personErr) throw new Error('人员加载失败: ' + personErr.message);
     persons = personData || [];
     console.log('人员:', persons.length);
     
     console.log('加载配件...');
-    const { data: partData, error: partErr } = await supabase.from('parts').select('*').order('id');
+    const { data: partData, error: partErr } = await db.from('parts').select('*').order('id');
     if (partErr) throw new Error('配件加载失败: ' + partErr.message);
     parts = partData || [];
     console.log('配件:', parts.length);
     
     console.log('加载记录...');
-    const { data: recordData, error: recErr } = await supabase.from('records').select('*').order('created_at', { ascending: false });
+    const { data: recordData, error: recErr } = await db.from('records').select('*').order('created_at', { ascending: false });
     if (recErr) throw new Error('记录加载失败: ' + recErr.message);
     records = recordData || [];
     console.log('记录:', records.length);
@@ -508,10 +508,10 @@ async function doCheckout() {
     const p = parts.find(x => x.id === partId);
     if (p.stock < qty) return alert('库存不足！当前库存：' + p.stock);
     
-    const { error: e1 } = await supabase.from('parts').update({ stock: p.stock - qty }).eq('id', partId);
+    const { error: e1 } = await db.from('parts').update({ stock: p.stock - qty }).eq('id', partId);
     if (e1) return alert('更新失败：' + e1.message);
     
-    const { error: e2 } = await supabase.from('records').insert({
+    const { error: e2 } = await db.from('records').insert({
         part_id: partId,
         part_name: p.name + (p.model ? ' ('+p.model+')' : ''),
         person_id: personId,
@@ -536,10 +536,10 @@ async function doReturn() {
     
     const p = parts.find(x => x.id === partId);
     
-    const { error: e1 } = await supabase.from('parts').update({ stock: p.stock + qty }).eq('id', partId);
+    const { error: e1 } = await db.from('parts').update({ stock: p.stock + qty }).eq('id', partId);
     if (e1) return alert('更新失败：' + e1.message);
     
-    const { error: e2 } = await supabase.from('records').insert({
+    const { error: e2 } = await db.from('records').insert({
         part_id: partId,
         part_name: p.name + (p.model ? ' ('+p.model+')' : ''),
         person_id: personId,
