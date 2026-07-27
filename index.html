@@ -3,660 +3,603 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0a0f1a">
-    <title>燃料油统计</title>
+    <meta name="theme-color" content="#1a1a2e">
+    <title>仓库管理</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+    // 版本检查
+    console.log('Version: v2.1 - fixed supabase naming');
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg: #0a0f1a;
-            --card: #1a2332;
-            --text: #f1f5f9;
-            --muted: #64748b;
-            --gold: #f59e0b;
-            --green: #10b981;
-            --red: #ef4444;
-            --border: #2d3a4f;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding-bottom: 100px;
-        }
-        .header {
-            background: linear-gradient(180deg, #111827 0%, transparent);
-            padding: 16px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid var(--border);
-        }
-        .logo { display: flex; align-items: center; gap: 12px; }
-        .logo-icon {
-            width: 40px; height: 40px;
-            background: linear-gradient(135deg, var(--gold), #b45309);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
-        }
+        body { font-family: -apple-system, sans-serif; background: #0f0f1a; color: #f1f5f9; min-height: 100vh; padding-bottom: 80px; }
+        .header { background: #1a1a2e; padding: 16px 20px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #3d3d5c; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .logo-text { font-size: 18px; font-weight: 700; }
-        .logo-sub { font-size: 11px; color: var(--muted); }
-        
-        .tabs {
-            display: flex;
-            background: #111827;
-            margin: 12px 16px;
-            border-radius: 12px;
-            padding: 4px;
-        }
-        .tab {
-            flex: 1;
-            padding: 10px 8px;
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-size: 13px;
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .tab.active { background: var(--card); color: var(--gold); }
-        
+        .logo-sub { font-size: 11px; color: #64748b; }
+        .sync-status { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: #252540; color: #10b981; }
+        .tabs { display: flex; background: #1a1a2e; margin: 12px 16px; border-radius: 12px; padding: 4px; gap: 2px; }
+        .tab { flex: 1; padding: 10px 4px; background: none; border: none; color: #64748b; font-size: 11px; font-weight: 500; border-radius: 8px; cursor: pointer; }
+        .tab.active { background: #252540; color: #f59e0b; }
         .panel { display: none; padding: 16px; }
-        .panel.active { display: block; animation: in 0.2s ease; }
-        @keyframes in { from { opacity: 0; transform: translateY(8px); } }
-        
-        .section-title {
-            font-size: 12px;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin: 16px 0 10px;
-        }
-        
-        .vehicle-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .vehicle {
-            background: var(--card);
-            border: 2px solid transparent;
-            border-radius: 12px;
-            padding: 14px 10px;
-            text-align: center;
-            cursor: pointer;
-        }
-        .vehicle.selected { border-color: var(--gold); background: rgba(245,158,11,0.1); }
-        .vehicle-icon { font-size: 28px; margin-bottom: 6px; }
-        .vehicle-name { font-size: 14px; font-weight: 600; }
-        .vehicle-info { font-size: 10px; color: var(--muted); margin-top: 2px; }
-        
-        .type-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .type-tab {
-            flex: 1;
-            padding: 12px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--muted);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .type-tab.active { background: var(--gold); color: #000; border-color: var(--gold); }
-        
-        .input-group { margin-bottom: 12px; }
-        .input-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; display: block; }
-        .input {
-            width: 100%;
-            padding: 12px;
-            background: #243044;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 16px;
-        }
-        .input:focus { outline: none; border-color: var(--gold); }
-        
-        .bucket-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .bucket-item {
-            background: #243044;
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-        }
-        .bucket-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-        .bucket-input {
-            width: 100%;
-            padding: 10px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            font-size: 20px;
-            font-weight: 600;
-            text-align: center;
-        }
-        .bucket-input:focus { outline: none; border-color: var(--gold); }
-        .bucket-unit { font-size: 10px; color: var(--muted); margin-top: 2px; }
-        
-        .meter-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .meter-item {
-            background: #243044;
-            border-radius: 10px;
-            padding: 12px;
-        }
-        .meter-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .dot-high { background: var(--gold); }
-        .dot-low { background: #3b82f6; }
-        .dot-bio { background: var(--green); }
-        .meter-input {
-            width: 100%;
-            padding: 10px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            font-size: 18px;
-            font-weight: 600;
-            text-align: center;
-        }
-        .meter-input:focus { outline: none; border-color: var(--gold); }
-        
-        .sale-item {
-            background: #243044;
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 10px;
-        }
-        .sale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .sale-num { font-size: 12px; color: var(--muted); font-weight: 600; }
-        .sale-del {
-            width: 24px; height: 24px;
-            background: var(--red);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .sale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .sale-grid .input { padding: 10px; font-size: 14px; }
-        
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--gold), #b45309);
-            border: none;
-            border-radius: 10px;
-            color: #000;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 16px;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn-add {
-            background: var(--card);
-            color: var(--text);
-            border: 1px solid var(--border);
-            margin-top: 8px;
-        }
-        
-        .record-item {
-            background: var(--card);
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 10px;
-            border-left: 3px solid var(--gold);
-        }
-        .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .record-date { font-size: 13px; font-weight: 600; }
-        .record-vehicle { font-size: 11px; color: var(--muted); }
-        .record-type { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
-        .type-out { background: rgba(239,68,68,0.2); color: var(--red); }
-        .type-in { background: rgba(16,185,129,0.2); color: var(--green); }
-        .record-data { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 12px; text-align: center; }
-        .record-val { font-weight: 600; }
-        .record-lbl { color: var(--muted); font-size: 10px; }
-        
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .stat {
-            background: var(--card);
-            border-radius: 10px;
-            padding: 14px;
-            text-align: center;
-        }
-        .stat-val { font-size: 24px; font-weight: 700; }
-        .stat-val.ok { color: var(--green); }
-        .stat-val.warn { color: var(--gold); }
-        .stat-val.err { color: var(--red); }
-        .stat-lbl { font-size: 11px; color: var(--muted); }
-        
-        .alert {
-            padding: 12px 14px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .alert-ok { background: rgba(16,185,129,0.15); border: 1px solid var(--green); color: var(--green); }
-        .alert-warn { background: rgba(245,158,11,0.15); border: 1px solid var(--gold); color: var(--gold); }
-        .alert-err { background: rgba(239,68,68,0.15); border: 1px solid var(--red); color: var(--red); }
-        
-        .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #111827;
-            border-top: 1px solid var(--border);
-            padding: 12px 16px;
-        }
-        .bottom-bar .btn { margin-top: 0; }
-        
-        .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
-        .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
-        
+        .panel.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+        .stat-card { background: #252540; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #3d3d5c; }
+        .stat-value { font-size: 28px; font-weight: 700; font-family: monospace; }
+        .stat-value.green { color: #10b981; }
+        .stat-value.red { color: #ef4444; }
+        .stat-value.gold { color: #f59e0b; }
+        .stat-value.blue { color: #3b82f6; }
+        .stat-label { font-size: 11px; color: #64748b; margin-top: 2px; }
+        .card { background: #252540; border-radius: 12px; padding: 14px; margin-bottom: 10px; border: 1px solid #3d3d5c; }
+        .alert { padding: 12px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 13px; }
+        .alert-red { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #ef4444; }
+        .alert-green { background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #10b981; }
+        .section-title { font-size: 12px; color: #64748b; margin-bottom: 10px; text-transform: uppercase; }
+        .section { margin-bottom: 20px; }
+        .loading { text-align: center; padding: 40px; color: #64748b; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a2e; border-top: 1px solid #3d3d5c; display: flex; z-index: 100; }
+        .nav-item { flex: 1; padding: 12px 4px; background: none; border: none; color: #64748b; font-size: 10px; cursor: pointer; }
+        .nav-item.active { color: #f59e0b; }
+        .nav-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+        .form-group { margin-bottom: 14px; }
+        .form-input, .form-select { width: 100%; padding: 12px 14px; background: #252540; border: 1px solid #3d3d5c; border-radius: 10px; color: #f1f5f9; font-size: 15px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .btn-primary { background: #f59e0b; color: #000; }
+        .btn-secondary { background: #2d2d4a; color: #f1f5f9; border: 1px solid #3d3d5c; }
+        .empty { text-align: center; padding: 50px 20px; color: #64748b; }
+        .person-tag { display: inline-block; padding: 2px 8px; background: rgba(59,130,246,0.2); color: #3b82f6; border-radius: 10px; font-size: 11px; font-weight: 600; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: #1a1a2e; border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 20px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-close { width: 32px; height: 32px; background: #252540; border: none; border-radius: 50%; color: #f1f5f9; font-size: 18px; cursor: pointer; }
+        .stepper { display: flex; align-items: center; gap: 12px; justify-content: center; }
+        .stepper-btn { width: 44px; height: 44px; background: #2d2d4a; border: 1px solid #3d3d5c; border-radius: 10px; color: #f1f5f9; font-size: 20px; cursor: pointer; }
+        .stepper-val { font-size: 28px; font-weight: 700; font-family: monospace; min-width: 50px; text-align: center; }
+        .record-item { background: #252540; border-radius: 12px; padding: 14px; margin-bottom: 10px; border-left: 4px solid #3b82f6; }
+        .record-item.out { border-left-color: #ef4444; }
+        .record-item.ret { border-left-color: #10b981; }
+        .record-meta { font-size: 12px; color: #64748b; }
+        .record-meta span { margin-right: 12px; }
         .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .filter-row .input { padding: 10px; font-size: 14px; }
-        
-        .analysis-card {
-            background: var(--card);
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 12px;
-        }
-        .analysis-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
-        .analysis-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
-        }
-        .analysis-row:last-child { border-bottom: none; }
-        .analysis-lbl { color: var(--muted); }
-        .analysis-val { font-weight: 600; }
-        
-        @media (min-width: 768px) {
-            .bottom-bar { position: static; background: transparent; border: none; padding: 16px 0; }
-            body { padding-bottom: 0; max-width: 500px; margin: 0 auto; }
-        }
+        .search-bar { position: relative; margin-bottom: 16px; }
+        .search-bar input { width: 100%; padding: 12px 14px 12px 40px; background: #252540; border: 1px solid #3d3d5c; border-radius: 12px; color: #f1f5f9; font-size: 15px; box-sizing: border-box; }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); }
     </style>
 </head>
 <body>
-    <div class="header">
+<header class="header">
+    <div class="header-top">
         <div class="logo">
-            <div class="logo-icon">⛽</div>
+            <div class="logo-icon">📦</div>
             <div>
-                <div class="logo-text">燃料油统计</div>
-                <div class="logo-sub">误差监控系统</div>
+                <div class="logo-text">仓库管理</div>
+                <div class="logo-sub">麻章区鑫旺商行 · 云同步</div>
             </div>
         </div>
+        <div class="sync-status" id="syncStatus">☁️ 已连接</div>
     </div>
-    
-    <div class="tabs">
-        <button class="tab active" data-tab="record">📝 登记</button>
-        <button class="tab" data-tab="history">📋 记录</button>
-        <button class="tab" data-tab="analysis">📊 分析</button>
+</header>
+
+<nav class="tabs">
+    <button class="tab active" data-tab="home">🏠 首页</button>
+    <button class="tab" data-tab="parts">🧰 配件</button>
+    <button class="tab" data-tab="checkout">📤 领用</button>
+    <button class="tab" data-tab="records">📋 记录</button>
+</nav>
+
+<div id="loadingScreen" class="loading">正在连接数据库...</div>
+
+<div id="home-panel" class="panel">
+    <div class="section">
+        <div class="section-title">📊 库存概览</div>
+        <div class="stats-grid" id="homeStats"></div>
     </div>
-    
-    <!-- 登记面板 -->
-    <div id="record-panel" class="panel active">
-        <div class="section-title">选择车辆</div>
-        <div class="vehicle-grid">
-            <div class="vehicle" data-v="新电车" onclick="selVehicle(this)">
-                <div class="vehicle-icon">🚛</div>
-                <div class="vehicle-name">新电车</div>
-                <div class="vehicle-info">3桶·高+低+生</div>
+    <div id="lowStockAlert"></div>
+    <div class="section">
+        <div class="section-title">🚨 库存预警</div>
+        <div id="lowStockList"></div>
+    </div>
+</div>
+
+<div id="parts-panel" class="panel">
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchParts" placeholder="搜索配件..." oninput="filterParts()">
+    </div>
+    <div id="partsList"></div>
+</div>
+
+<div id="checkout-panel" class="panel">
+    <div class="section">
+        <div class="section-title">📤 领用配件</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="section-title">配件名称</label>
+                <div class="search-bar" style="margin-bottom:0;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="checkoutSearch" placeholder="输入配件名称搜索..." oninput="searchPartsForCheckout()">
+                </div>
+                <div id="checkoutSuggestions" style="margin-top:8px;max-height:200px;overflow-y:auto;"></div>
+                <input type="hidden" id="checkoutPartId">
+                <div id="selectedPartInfo" style="display:none;margin-top:12px;padding:12px;background:#2d2d4a;border-radius:8px;"></div>
             </div>
-            <div class="vehicle" data-v="电车" onclick="selVehicle(this)">
-                <div class="vehicle-icon">🚚</div>
-                <div class="vehicle-name">电车</div>
-                <div class="vehicle-info">2桶·高+低</div>
+            <div class="form-group">
+                <label class="section-title">领取人</label>
+                <select class="form-select" id="checkoutPerson">
+                    <option value="">请选择</option>
+                </select>
             </div>
-            <div class="vehicle" data-v="新车" onclick="selVehicle(this)">
-                <div class="vehicle-icon">🚗</div>
-                <div class="vehicle-name">新车</div>
-                <div class="vehicle-info">3桶·高+低</div>
+            <div class="form-group">
+                <label class="section-title">数量</label>
+                <div class="stepper">
+                    <button class="stepper-btn" onclick="changeQty('checkoutQty', -1)">−</button>
+                    <span class="stepper-val" id="checkoutQty">1</span>
+                    <button class="stepper-btn" onclick="changeQty('checkoutQty', 1)">+</button>
+                </div>
             </div>
+            <button class="btn btn-primary" onclick="doCheckout()">📤 确认领用</button>
         </div>
-        
-        <div class="section-title">记录类型</div>
-        <div class="type-tabs">
-            <div class="type-tab active" data-t="out" onclick="selType(this)">🚚 出车</div>
-            <div class="type-tab" data-t="in" onclick="selType(this)">🏠 回车</div>
-        </div>
-        
-        <div class="section-title">时间</div>
-        <div class="filter-row">
-            <input type="date" class="input" id="date">
-            <input type="time" class="input" id="time">
-        </div>
-        
-        <div class="section-title">桶刻度（升）</div>
-        <div class="bucket-grid" id="buckets"></div>
-        
-        <div class="section-title">油表总累</div>
-        <div class="meter-grid" id="meters"></div>
-        
-        <div id="sales-section" style="display:none">
-            <div class="section-title">销售记录</div>
-            <div id="sales"></div>
-            <button class="btn btn-add" onclick="addSale()">➕ 添加销售</button>
-        </div>
-        
-        <div class="section-title">备注</div>
-        <textarea class="input" id="notes" rows="2" placeholder="特殊情况说明..."></textarea>
     </div>
-    
-    <!-- 记录面板 -->
-    <div id="history-panel" class="panel">
-        <div class="filter-row">
-            <select class="input" id="filter-v" onchange="loadRecords()">
-                <option value="">全部车辆</option>
-                <option value="新电车">新电车</option>
-                <option value="电车">电车</option>
-                <option value="新车">新车</option>
-            </select>
-            <input type="date" class="input" id="filter-d" onchange="loadRecords()">
+    <div class="section">
+        <div class="section-title">📥 归还配件</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="section-title">配件名称</label>
+                <div class="search-bar" style="margin-bottom:0;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="returnSearch" placeholder="输入配件名称搜索..." oninput="searchPartsForReturn()">
+                </div>
+                <div id="returnSuggestions" style="margin-top:8px;max-height:200px;overflow-y:auto;"></div>
+                <input type="hidden" id="returnPartId">
+                <div id="selectedReturnPartInfo" style="display:none;margin-top:12px;padding:12px;background:#2d2d4a;border-radius:8px;"></div>
+            </div>
+            <div class="form-group">
+                <label class="section-title">归还人</label>
+                <select class="form-select" id="returnPerson">
+                    <option value="">请选择</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="section-title">数量</label>
+                <div class="stepper">
+                    <button class="stepper-btn" onclick="changeQty('returnQty', -1)">−</button>
+                    <span class="stepper-val" id="returnQty">1</span>
+                    <button class="stepper-btn" onclick="changeQty('returnQty', 1)">+</button>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="doReturn()">📥 确认归还</button>
         </div>
-        <div id="records"></div>
     </div>
-    
-    <!-- 分析面板 -->
-    <div id="analysis-panel" class="panel">
-        <div class="filter-row">
-            <input type="date" class="input" id="start" onchange="analyze()">
-            <input type="date" class="input" id="end" onchange="analyze()">
+</div>
+
+<div id="records-panel" class="panel">
+    <div class="filter-row">
+        <select class="form-input" id="filterType" onchange="loadRecords()">
+            <option value="">全部类型</option>
+            <option value="out">领用</option>
+            <option value="ret">归还</option>
+        </select>
+        <select class="form-input" id="filterPerson" onchange="loadRecords()">
+            <option value="">全部人员</option>
+        </select>
+    </div>
+    <div id="recordsList"></div>
+</div>
+
+<nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('home')"><span class="nav-icon">🏠</span>首页</button>
+    <button class="nav-item" onclick="switchTab('parts')"><span class="nav-icon">🧰</span>配件</button>
+    <button class="nav-item" onclick="switchTab('checkout')"><span class="nav-icon">📤</span>领用</button>
+    <button class="nav-item" onclick="switchTab('records')"><span class="nav-icon">📋</span>记录</button>
+</nav>
+
+<div class="modal-overlay" id="partDetailModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="detailTitle">配件详情</div>
+            <button class="modal-close" onclick="document.getElementById('partDetailModal').classList.remove('active')">×</button>
         </div>
-        <div id="analysis"></div>
+        <div id="detailContent"></div>
     </div>
-    
-    <div class="bottom-bar" id="bottom">
-        <button class="btn" onclick="save()">💾 保存记录</button>
-    </div>
+</div>
 
 <script>
-const CFG = {
-    '新电车': { buckets: ['高度油','低度油','生物油'], meters: ['高度油表','低度油表','生物油表'] },
-    '电车': { buckets: ['高度油','低度油'], meters: ['高度油表','低度油表'] },
-    '新车': { buckets: ['高度油','低度油','空桶'], meters: ['高度油表','低度油表'] }
-};
+const SUPABASE_URL = 'https://xtwirqahbthencfeqczr.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0d2lycWFoYnRoZW5jZmVxY3pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxMjg0NTcsImV4cCI6MjEwMDcwNDQ1N30.RumLwT0WhYccjstZ6_mrDvt4OzQc0IXy-x3GPCYekuM';
 
-let vehicle = null, type = 'out', saleCount = 0;
+let db = null;
+let categories = [];
+let persons = [];
+let parts = [];
+let records = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-    const now = new Date();
-    document.getElementById('date').value = now.toISOString().split('T')[0];
-    document.getElementById('time').value = now.toTimeString().slice(0,5);
-    
-    const weekAgo = new Date(now - 7*24*60*60*1000).toISOString().split('T')[0];
-    document.getElementById('start').value = weekAgo;
-    document.getElementById('end').value = now.toISOString().split('T')[0];
-    
-    document.querySelectorAll('.tab').forEach(t => {
-        t.onclick = () => {
-            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
-            t.classList.add('active');
-            document.getElementById(t.dataset.tab + '-panel').classList.add('active');
-            document.getElementById('bottom').style.display = t.dataset.tab === 'record' ? 'block' : 'none';
-            if (t.dataset.tab === 'history') loadRecords();
-            if (t.dataset.tab === 'analysis') analyze();
-        };
-    });
-    
-    loadRecords();
-    analyze();
+window.addEventListener('error', function(e) {
+    document.getElementById('loadingScreen').innerHTML = 
+        '<div style="color:#ef4444;">❌ 加载错误</div>' +
+        '<div style="font-size:12px;margin-top:8px;color:#64748b;">' + e.message + '</div>';
 });
 
-function selVehicle(el) {
-    document.querySelectorAll('.vehicle').forEach(v => v.classList.remove('selected'));
-    el.classList.add('selected');
-    vehicle = el.dataset.v;
-    renderBuckets();
-    renderMeters();
-}
-
-function selType(el) {
-    document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    type = el.dataset.t;
-    document.getElementById('sales-section').style.display = type === 'in' ? 'block' : 'none';
-    if (type === 'out') {
-        saleCount = 0;
-        document.getElementById('sales').innerHTML = '';
+async function init() {
+    console.log('1. 初始化开始');
+    try {
+        console.log('2. 创建 supabase client');
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('3. client 已创建');
+        
+        console.log('4. 加载数据...');
+        await loadData();
+        console.log('5. 数据加载完成');
+        
+        console.log('6. 隐藏加载页');
+        document.getElementById('loadingScreen').style.display = 'none';
+        renderHome();
+        console.log('7. 首页渲染完成');
+    } catch (e) {
+        console.error('Init error:', e);
+        document.getElementById('loadingScreen').innerHTML = 
+            '<div style="color:#ef4444;">❌ 连接失败</div>' +
+            '<div style="font-size:12px;margin-top:8px;color:#64748b;max-width:400px;word-wrap:break-word;">' + (e.message || JSON.stringify(e)) + '</div>' +
+            '<button class="btn btn-primary" onclick="location.reload()" style="width:auto;margin-top:16px;">重试</button>';
     }
 }
 
-function renderBuckets() {
-    if (!vehicle) return;
-    const cfg = CFG[vehicle];
-    document.getElementById('buckets').innerHTML = cfg.buckets.map((b,i) => `
-        <div class="bucket-item">
-            <div class="bucket-label">${b}</div>
-            <input type="number" class="bucket-input" id="b${i}" placeholder="0" max="1000">
-            <div class="bucket-unit">升</div>
-        </div>
-    `).join('');
-}
-
-function renderMeters() {
-    if (!vehicle) return;
-    const cfg = CFG[vehicle];
-    const dots = ['dot-high','dot-low','dot-bio'];
-    document.getElementById('meters').innerHTML = cfg.meters.map((m,i) => `
-        <div class="meter-item">
-            <div class="meter-label"><span class="dot ${dots[i]}"></span>${m}</div>
-            <input type="number" class="meter-input" id="m${i}" placeholder="0" step="0.1">
-        </div>
-    `).join('');
-}
-
-function addSale() {
-    saleCount++;
-    document.getElementById('sales').innerHTML += `
-        <div class="sale-item" id="sale${saleCount}">
-            <div class="sale-header">
-                <span class="sale-num">销售 #${saleCount}</span>
-                <button class="sale-del" onclick="document.getElementById('sale${saleCount}').remove()">×</button>
-            </div>
-            <div class="sale-grid">
-                <input type="text" class="input sc" placeholder="客户名">
-                <select class="input st"><option>高度油</option><option>低度油</option><option>生物油</option></select>
-                <input type="number" class="input sa" placeholder="升数">
-                <input type="number" class="input sp" placeholder="单价">
-            </div>
-        </div>
-    `;
-}
-
-function save() {
-    if (!vehicle) return alert('请先选择车辆');
+async function loadData() {
+    console.log('加载分类...');
+    const { data: catData, error: catErr } = await db.from('categories').select('*').order('id');
+    if (catErr) throw new Error('分类加载失败: ' + catErr.message);
+    categories = catData || [];
+    console.log('分类:', categories.length);
     
-    const cfg = CFG[vehicle];
-    const buckets = cfg.buckets.map((b,i) => ({ oil: b, liters: +document.getElementById('b'+i)?.value || 0 }));
-    const meters = cfg.meters.map((m,i) => ({ meter: m, reading: +document.getElementById('m'+i)?.value || 0 }));
+    console.log('加载人员...');
+    const { data: personData, error: personErr } = await db.from('persons').select('*').order('id');
+    if (personErr) throw new Error('人员加载失败: ' + personErr.message);
+    persons = personData || [];
+    console.log('人员:', persons.length);
     
-    const sales = [];
-    document.querySelectorAll('.sale-item').forEach(el => {
-        sales.push({
-            customer: el.querySelector('.sc')?.value || '',
-            oilType: el.querySelector('.st')?.value || '',
-            liters: +el.querySelector('.sa')?.value || 0,
-            price: +el.querySelector('.sp')?.value || 0
-        });
+    console.log('加载配件...');
+    const { data: partData, error: partErr } = await db.from('parts').select('*').order('id');
+    if (partErr) throw new Error('配件加载失败: ' + partErr.message);
+    parts = partData || [];
+    console.log('配件:', parts.length);
+    
+    console.log('加载记录...');
+    const { data: recordData, error: recErr } = await db.from('records').select('*').order('created_at', { ascending: false });
+    if (recErr) throw new Error('记录加载失败: ' + recErr.message);
+    records = recordData || [];
+    console.log('记录:', records.length);
+}
+
+function getCategoryName(id) {
+    const c = categories.find(x => x.id === id);
+    return c ? c.name : '其他';
+}
+
+function getPersonName(id) {
+    const p = persons.find(x => x.id === id);
+    return p ? p.name : '未知';
+}
+
+function formatDate(d) {
+    const dt = new Date(d);
+    const now = new Date();
+    if (dt.toDateString() === now.toDateString()) {
+        return '今天 ' + dt.toTimeString().slice(0,5);
+    }
+    return (dt.getMonth()+1) + '/' + dt.getDate() + ' ' + dt.toTimeString().slice(0,5);
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === tab + '-panel'));
+    document.querySelectorAll('.nav-item').forEach((n, i) => {
+        const tabs = ['home','parts','checkout','records'];
+        n.classList.toggle('active', tabs[i] === tab);
     });
     
-    const record = {
-        id: Date.now(),
-        vehicle, type,
-        date: document.getElementById('date').value,
-        time: document.getElementById('time').value,
-        buckets, meters, sales,
-        notes: document.getElementById('notes').value
-    };
-    
-    const records = JSON.parse(localStorage.getItem('fuelRecords') || '[]');
-    records.push(record);
-    localStorage.setItem('fuelRecords', JSON.stringify(records));
-    
-    alert('保存成功！');
-    document.querySelectorAll('.bucket-input, .meter-input').forEach(i => i.value = '');
-    document.getElementById('notes').value = '';
-    document.getElementById('sales').innerHTML = '';
-    saleCount = 0;
-    
-    const now = new Date();
-    document.getElementById('time').value = now.toTimeString().slice(0,5);
-    loadRecords();
+    if (tab === 'home') renderHome();
+    if (tab === 'parts') renderParts();
+    if (tab === 'checkout') initCheckout();
+    if (tab === 'records') loadRecords();
 }
 
-function loadRecords() {
-    const records = JSON.parse(localStorage.getItem('fuelRecords') || '[]');
-    const fv = document.getElementById('filter-v').value;
-    const fd = document.getElementById('filter-d').value;
+function renderHome() {
+    const totalStock = parts.reduce((s, p) => s + p.stock, 0);
+    const lowStock = parts.filter(p => p.stock <= p.alert_stock);
+    const now = new Date();
+    const todayRecords = records.filter(r => new Date(r.created_at).toDateString() === now.toDateString());
+    const outToday = todayRecords.filter(r => r.type === 'out').length;
     
-    let filtered = records;
-    if (fv) filtered = filtered.filter(r => r.vehicle === fv);
-    if (fd) filtered = filtered.filter(r => r.date === fd);
-    filtered.sort((a,b) => new Date(b.date+' '+b.time) - new Date(a.date+' '+a.time));
+    document.getElementById('homeStats').innerHTML = `
+        <div class="stat-card"><div class="stat-value green">${totalStock}</div><div class="stat-label">总库存</div></div>
+        <div class="stat-card"><div class="stat-value blue">${parts.length}</div><div class="stat-label">配件种类</div></div>
+        <div class="stat-card"><div class="stat-value gold">${outToday}</div><div class="stat-label">今日领用</div></div>
+        <div class="stat-card"><div class="stat-value red">${lowStock.length}</div><div class="stat-label">库存预警</div></div>
+    `;
     
-    const el = document.getElementById('records');
-    if (!filtered.length) {
-        el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div>暂无记录</div></div>';
+    if (lowStock.length > 0) {
+        document.getElementById('lowStockAlert').innerHTML = '<div class="alert alert-red">⚠️ 有 ' + lowStock.length + ' 种配件库存低于警戒线！</div>';
+        document.getElementById('lowStockList').innerHTML = lowStock.map(p => `
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-weight:600;">${p.name}${p.model ? ' (' + p.model + ')' : ''}</div>
+                        <div style="font-size:11px;color:#64748b;">${getCategoryName(p.category_id)} · 警戒：${p.alert_stock}</div>
+                    </div>
+                    <div style="font-size:24px;font-weight:700;color:#ef4444;font-family:monospace;">${p.stock}</div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        document.getElementById('lowStockAlert').innerHTML = '<div class="alert alert-green">✅ 所有配件库存正常</div>';
+        document.getElementById('lowStockList').innerHTML = '';
+    }
+}
+
+function renderParts() {
+    filterParts();
+}
+
+function filterParts() {
+    const search = document.getElementById('searchParts').value.toLowerCase();
+    let filtered = [...parts];
+    if (search) filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(search) || 
+        (p.model && p.model.toLowerCase().includes(search))
+    );
+    
+    if (filtered.length === 0) {
+        document.getElementById('partsList').innerHTML = '<div class="empty">没有找到配件</div>';
         return;
     }
     
-    el.innerHTML = filtered.map(r => {
-        const total = r.buckets.reduce((s,b) => s + b.liters, 0);
-        const sales = r.sales.reduce((s,x) => s + x.liters, 0);
+    document.getElementById('partsList').innerHTML = filtered.map(p => {
+        const isLow = p.stock <= p.alert_stock;
         return `
-            <div class="record-item" onclick="showDetail(${r.id})">
-                <div class="record-header">
+            <div class="card" onclick="showPartDetail(${p.id})" style="cursor:pointer;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div>
-                        <div class="record-date">${r.date} ${r.time}</div>
-                        <div class="record-vehicle">${r.vehicle}</div>
+                        <div style="font-weight:600;">${p.name}${p.model ? ' (' + p.model + ')' : ''}</div>
+                        <div style="font-size:11px;color:#64748b;">${getCategoryName(p.category_id)}${isLow ? ' · ⚠️低于警戒' : ''}</div>
                     </div>
-                    <span class="record-type ${r.type === 'out' ? 'type-out' : 'type-in'}">${r.type === 'out' ? '出车' : '回车'}</span>
-                </div>
-                <div class="record-data">
-                    <div><div class="record-val">${total}</div><div class="record-lbl">桶存(升)</div></div>
-                    <div><div class="record-val">${r.meters[0]?.reading.toFixed(1) || '-'}</div><div class="record-lbl">高度表</div></div>
-                    <div><div class="record-val">${sales}</div><div class="record-lbl">销售(升)</div></div>
+                    <div style="font-size:24px;font-weight:700;color:${isLow?'#ef4444':'#10b981'};font-family:monospace;">${p.stock}</div>
                 </div>
             </div>
         `;
     }).join('');
 }
 
-function showDetail(id) {
-    const records = JSON.parse(localStorage.getItem('fuelRecords') || '[]');
-    const r = records.find(x => x.id === id);
-    if (!r) return;
+function showPartDetail(id) {
+    const p = parts.find(x => x.id === id);
+    if (!p) return;
+    const isLow = p.stock <= p.alert_stock;
+    const hist = records.filter(r => r.part_id === id).slice(0, 10);
     
-    let msg = `${r.date} ${r.time}\n${r.vehicle} - ${r.type === 'out' ? '出车' : '回车'}\n\n桶刻度:\n`;
-    r.buckets.forEach(b => msg += `${b.oil}: ${b.liters}升\n`);
-    msg += '\n油表:\n';
-    r.meters.forEach(m => msg += `${m.meter}: ${m.reading}\n`);
-    if (r.sales.length) {
-        msg += '\n销售:\n';
-        r.sales.forEach(s => msg += `${s.customer} - ${s.oilType} ${s.liters}升\n`);
-    }
-    if (r.notes) msg += '\n备注: ' + r.notes;
-    
-    if (confirm(msg + '\n\n点击"确定"删除此记录')) {
-        const filtered = records.filter(x => x.id !== id);
-        localStorage.setItem('fuelRecords', JSON.stringify(filtered));
-        loadRecords();
-        analyze();
-    }
+    document.getElementById('detailTitle').textContent = p.name + (p.model ? ' (' + p.model + ')' : '');
+    document.getElementById('detailContent').innerHTML = `
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value ${isLow ? 'red' : 'green'}">${p.stock}</div><div class="stat-label">当前库存</div></div>
+            <div class="stat-card"><div class="stat-value gold">${p.alert_stock}</div><div class="stat-label">警戒库存</div></div>
+        </div>
+        <div class="section-title" style="margin-top:16px;">📋 最近记录</div>
+        ${hist.length === 0 ? '<div class="empty">暂无记录</div>' : hist.map(r => `
+            <div class="record-item ${r.type}">
+                <div style="font-weight:600;margin-bottom:4px;">${r.type === 'out' ? '📤 领用' : '📥 归还'} ${r.qty}件</div>
+                <div class="record-meta">
+                    <span>👤 ${getPersonName(r.person_id)}</span>
+                    <span>⏰ ${formatDate(r.created_at)}</span>
+                </div>
+            </div>
+        `).join('')}
+    `;
+    document.getElementById('partDetailModal').classList.add('active');
 }
 
-function analyze() {
-    const records = JSON.parse(localStorage.getItem('fuelRecords') || '[]');
-    const start = document.getElementById('start').value;
-    const end = document.getElementById('end').value;
+function initCheckout() {
+    const personOptions = persons.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
+    document.getElementById('checkoutPerson').innerHTML = '<option value="">请选择</option>' + personOptions;
+    document.getElementById('returnPerson').innerHTML = '<option value="">请选择</option>' + personOptions;
     
-    if (!start || !end) return;
+    document.getElementById('checkoutSearch').value = '';
+    document.getElementById('returnSearch').value = '';
+    document.getElementById('checkoutSuggestions').innerHTML = '';
+    document.getElementById('returnSuggestions').innerHTML = '';
+    document.getElementById('selectedPartInfo').style.display = 'none';
+    document.getElementById('selectedReturnPartInfo').style.display = 'none';
+    document.getElementById('checkoutQty').textContent = '1';
+    document.getElementById('returnQty').textContent = '1';
+}
+
+function searchPartsForCheckout() {
+    const query = document.getElementById('checkoutSearch').value.toLowerCase().trim();
+    const suggestions = document.getElementById('checkoutSuggestions');
+    if (!query) { suggestions.innerHTML = ''; return; }
     
-    const filtered = records.filter(r => r.date >= start && r.date <= end);
-    const el = document.getElementById('analysis');
+    const filtered = parts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.model && p.model.toLowerCase().includes(query))
+    );
+    if (filtered.length === 0) {
+        suggestions.innerHTML = '<div style="padding:12px;color:#64748b;font-size:13px;">未找到配件</div>';
+        return;
+    }
+    suggestions.innerHTML = filtered.map(p => `
+        <div class="card" style="margin-bottom:8px;cursor:pointer;" onclick="selectPartForCheckout(${p.id})">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-weight:600;">${p.name}${p.model ? ' <span style="font-size:12px;color:#64748b">'+p.model+'</span>' : ''}</div></div>
+                <div style="font-size:20px;font-weight:700;color:${p.stock <= p.alert_stock ? '#ef4444' : '#10b981'};font-family:monospace;">${p.stock}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectPartForCheckout(id) {
+    const p = parts.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('checkoutPartId').value = id;
+    document.getElementById('checkoutSearch').value = '';
+    document.getElementById('checkoutSuggestions').innerHTML = '';
+    document.getElementById('selectedPartInfo').style.display = 'block';
+    document.getElementById('selectedPartInfo').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-weight:600;">✓ ${p.name}${p.model ? ' ('+p.model+')' : ''}</div></div>
+            <div style="font-size:24px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+        </div>
+    `;
+    document.getElementById('checkoutQty').dataset.max = p.stock;
+    document.getElementById('checkoutQty').textContent = '1';
+}
+
+function searchPartsForReturn() {
+    const query = document.getElementById('returnSearch').value.toLowerCase().trim();
+    const suggestions = document.getElementById('returnSuggestions');
+    if (!query) { suggestions.innerHTML = ''; return; }
     
-    if (!filtered.length) {
-        el.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div>无数据</div></div>';
+    const filtered = parts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.model && p.model.toLowerCase().includes(query))
+    );
+    if (filtered.length === 0) {
+        suggestions.innerHTML = '<div style="padding:12px;color:#64748b;font-size:13px;">未找到配件</div>';
+        return;
+    }
+    suggestions.innerHTML = filtered.map(p => `
+        <div class="card" style="margin-bottom:8px;cursor:pointer;" onclick="selectPartForReturn(${p.id})">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-weight:600;">${p.name}${p.model ? ' <span style="font-size:12px;color:#64748b">'+p.model+'</span>' : ''}</div></div>
+                <div style="font-size:20px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectPartForReturn(id) {
+    const p = parts.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('returnPartId').value = id;
+    document.getElementById('returnSearch').value = '';
+    document.getElementById('returnSuggestions').innerHTML = '';
+    document.getElementById('selectedReturnPartInfo').style.display = 'block';
+    document.getElementById('selectedReturnPartInfo').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-weight:600;">✓ ${p.name}${p.model ? ' ('+p.model+')' : ''}</div></div>
+            <div style="font-size:24px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+        </div>
+    `;
+    document.getElementById('returnQty').textContent = '1';
+}
+
+function changeQty(id, delta) {
+    const el = document.getElementById(id);
+    let val = parseInt(el.textContent);
+    const max = parseInt(el.dataset.max) || 9999;
+    val = Math.max(1, Math.min(max, val + delta));
+    el.textContent = val;
+}
+
+async function doCheckout() {
+    const partId = parseInt(document.getElementById('checkoutPartId').value);
+    const personId = parseInt(document.getElementById('checkoutPerson').value);
+    const qty = parseInt(document.getElementById('checkoutQty').textContent);
+    
+    if (!partId) return alert('请选择配件');
+    if (!personId) return alert('请选择领取人');
+    
+    const p = parts.find(x => x.id === partId);
+    if (p.stock < qty) return alert('库存不足！当前库存：' + p.stock);
+    
+    const { error: e1 } = await db.from('parts').update({ stock: p.stock - qty }).eq('id', partId);
+    if (e1) return alert('更新失败：' + e1.message);
+    
+    const { error: e2 } = await db.from('records').insert({
+        part_id: partId,
+        part_name: p.name + (p.model ? ' ('+p.model+')' : ''),
+        person_id: personId,
+        qty: qty,
+        type: 'out'
+    });
+    if (e2) return alert('记录失败：' + e2.message);
+    
+    await loadData();
+    alert('✅ 领用成功！');
+    initCheckout();
+    switchTab('home');
+}
+
+async function doReturn() {
+    const partId = parseInt(document.getElementById('returnPartId').value);
+    const personId = parseInt(document.getElementById('returnPerson').value);
+    const qty = parseInt(document.getElementById('returnQty').textContent);
+    
+    if (!partId) return alert('请选择配件');
+    if (!personId) return alert('请选择归还人');
+    
+    const p = parts.find(x => x.id === partId);
+    
+    const { error: e1 } = await db.from('parts').update({ stock: p.stock + qty }).eq('id', partId);
+    if (e1) return alert('更新失败：' + e1.message);
+    
+    const { error: e2 } = await db.from('records').insert({
+        part_id: partId,
+        part_name: p.name + (p.model ? ' ('+p.model+')' : ''),
+        person_id: personId,
+        qty: qty,
+        type: 'ret'
+    });
+    if (e2) return alert('记录失败：' + e2.message);
+    
+    await loadData();
+    alert('✅ 归还成功！');
+    initCheckout();
+    switchTab('home');
+}
+
+function loadRecords() {
+    const type = document.getElementById('filterType').value;
+    const personId = parseInt(document.getElementById('filterPerson').value) || 0;
+    
+    const personFilter = document.getElementById('filterPerson');
+    if (personFilter.options.length <= 1) {
+        personFilter.innerHTML = '<option value="">全部人员</option>' + 
+            persons.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
+    }
+    
+    let filtered = [...records];
+    if (type) filtered = filtered.filter(r => r.type === type);
+    if (personId) filtered = filtered.filter(r => r.person_id === personId);
+    
+    if (filtered.length === 0) {
+        document.getElementById('recordsList').innerHTML = '<div class="empty">暂无记录</div>';
         return;
     }
     
-    const byVehicle = {};
-    ['新电车','电车','新车'].forEach(v => {
-        const vr = filtered.filter(r => r.vehicle === v);
-        if (!vr.length) return;
-        
-        const byDate = {};
-        vr.forEach(r => {
-            if (!byDate[r.date]) byDate[r.date] = {};
-            byDate[r.date][r.type] = r;
-        });
-        
-        const results = [];
-        Object.entries(byDate).forEach(([d, pair]) => {
-            if (pair.out && pair.in) {
-                const outTotal = pair.out.buckets.reduce((s,b) => s + b.liters, 0);
-                const inTotal = pair.in.buckets.reduce((s,b) => s + b.liters, 0);
-                const sales = pair.in.sales.reduce((s,x) => s + x.liters, 0);
-                const err = outTotal - inTotal - sales;
-                results.push({ date: d, err, sales });
-            }
-        });
-        
-        if (results.length) {
-            const avgErr = results.reduce((s,x) => s + x.err, 0) / results.length;
-            const totalSales = results.reduce((s,x) => s + x.sales, 0);
-            byVehicle[v] = { results, avgErr, totalSales };
-        }
-    });
-    
-    let html = '';
-    Object.entries(byVehicle).forEach(([v, data]) => {
-        const status = Math.abs(data.avgErr) <= 20 ? 'ok' : Math.abs(data.avgErr) <= 50 ? 'warn' : 'err';
-        html += `
-            <div class="analysis-card">
-                <div class="analysis-title">🚛 ${v}</div>
-                <div class="stats">
-                    <div class="stat"><div class="stat-val ${status}">${data.avgErr.toFixed(1)}</div><div class="stat-lbl">平均误差(升)</div></div>
-                    <div class="stat"><div class="stat-val ok">${data.totalSales.toFixed(0)}</div><div class="stat-lbl">销售合计(升)</div></div>
-                </div>
-                ${Math.abs(data.avgErr) > 20 ? `<div class="alert alert-${status}">${Math.abs(data.avgErr) > 50 ? '⚠️' : '⚡'} 误差超过正常范围(≤20升)</div>` : `<div class="alert alert-ok">✅ 误差正常</div>`}
-                <div class="analysis-row"><span class="analysis-lbl">日期</span><span class="analysis-val">误差</span></div>
-                ${data.results.map(x => `<div class="analysis-row"><span class="analysis-lbl">${x.date}</span><span class="analysis-val">${x.err.toFixed(1)}升</span></div>`).join('')}
+    document.getElementById('recordsList').innerHTML = filtered.map(r => `
+        <div class="record-item ${r.type}">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <div style="font-weight:600;">${r.part_name}</div>
+                <div style="font-size:13px;font-weight:700;color:${r.type==='out'?'#ef4444':'#10b981'};">${r.type==='out'?'-':'+'}${r.qty}件</div>
             </div>
-        `;
-    });
-    
-    el.innerHTML = html || '<div class="empty"><div class="empty-icon">📊</div><div>无完整出回车配对</div></div>';
+            <div class="record-meta">
+                <span>👤 ${getPersonName(r.person_id)}</span>
+                <span>⏰ ${formatDate(r.created_at)}</span>
+            </div>
+        </div>
+    `).join('');
 }
+
+// Tab 点击
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM ready, starting init');
+    init();
+});
 </script>
 </body>
 </html>
