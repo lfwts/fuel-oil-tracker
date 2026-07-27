@@ -737,10 +737,7 @@ async function init() {
         document.getElementById('syncStatus').className = 'sync-status online';
         document.getElementById('syncStatus').textContent = '☁️ 连接中...';
         
-        // 检查表是否存在，不存在则创建
-        await initDatabase();
-        
-        // 加载数据
+        // 加载数据（表已手动创建）
         await loadData();
         
         // 订阅实时更新
@@ -763,61 +760,8 @@ async function init() {
 }
 
 async function initDatabase() {
-    // 创建分类表
-    await supabase.rpc('exec_sql', {
-        sql: `
-            CREATE TABLE IF NOT EXISTS categories (
-                id SERIAL PRIMARY KEY,
-                name TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT NOW()
-            );
-        `
-    }).catch(() => {});
-    
-    // 创建人员表
-    await supabase.rpc('exec_sql', {
-        sql: `
-            CREATE TABLE IF NOT EXISTS persons (
-                id SERIAL PRIMARY KEY,
-                name TEXT NOT NULL,
-                phone TEXT,
-                role TEXT DEFAULT 'driver',
-                created_at TIMESTAMP DEFAULT NOW()
-            );
-        `
-    }).catch(() => {});
-    
-    // 创建配件表
-    await supabase.rpc('exec_sql', {
-        sql: `
-            CREATE TABLE IF NOT EXISTS parts (
-                id SERIAL PRIMARY KEY,
-                name TEXT NOT NULL,
-                model TEXT,
-                stock INTEGER DEFAULT 0,
-                alert_stock INTEGER DEFAULT 5,
-                category_id INTEGER,
-                note TEXT,
-                created_at TIMESTAMP DEFAULT NOW()
-            );
-        `
-    }).catch(() => {});
-    
-    // 创建记录表
-    await supabase.rpc('exec_sql', {
-        sql: `
-            CREATE TABLE IF NOT EXISTS records (
-                id SERIAL PRIMARY KEY,
-                part_id INTEGER NOT NULL,
-                part_name TEXT NOT NULL,
-                person_id INTEGER NOT NULL,
-                qty INTEGER NOT NULL,
-                type TEXT NOT NULL,
-                note TEXT,
-                created_at TIMESTAMP DEFAULT NOW()
-            );
-        `
-    }).catch(() => {});
+    // 表已在 Supabase 控制台手动创建
+    return true;
 }
 
 async function loadData() {
