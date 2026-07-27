@@ -2,2590 +2,1353 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
     <title>仓库管理系统</title>
-    <!-- Tailwind CSS v3 -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- 统一的 Tailwind 配置 -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3B82F6',
-                        secondary: '#F3F4F6',
-                        success: '#10B981',
-                        warning: '#F59E0B',
-                        danger: '#EF4444',
-                        dark: '#1F2937',
-                        medium: '#6B7280'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0f0f1a;
+            --bg2: #1a1a2e;
+            --card: #252540;
+            --card2: #2d2d4a;
+            --gold: #f59e0b;
+            --blue: #3b82f6;
+            --green: #10b981;
+            --red: #ef4444;
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --border: #3d3d5c;
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .glass-effect {
-                background: rgba(255, 255, 255, 0.8);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-            }
-            .tab-active {
-                @apply text-primary border-b-2 border-primary;
-            }
-            .btn-primary {
-                @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors;
-            }
-            .btn-secondary {
-                @apply bg-secondary text-dark px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors;
-            }
-            .btn-success {
-                @apply bg-success text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors;
-            }
-            .btn-warning {
-                @apply bg-warning text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors;
-            }
-            .btn-danger {
-                @apply bg-danger text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors;
-            }
-            .card {
-                @apply bg-white rounded-xl shadow-md p-4 mb-4;
-            }
-            .input-field {
-                @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
-            }
-            .badge {
-                @apply px-2 py-1 text-xs rounded-full;
-            }
-            .badge-success {
-                @apply bg-green-100 text-green-800;
-            }
-            .badge-warning {
-                @apply bg-yellow-100 text-yellow-800;
-            }
-            .badge-danger {
-                @apply bg-red-100 text-red-800;
-            }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg2), #16213e);
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        .header-top { display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--gold), #d97706);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .logo-text { font-size: 18px; font-weight: 700; }
+        .logo-sub { font-size: 11px; color: var(--muted); }
+        .header-actions { display: flex; gap: 8px; }
+        .icon-btn {
+            width: 36px; height: 36px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--bg2);
+            margin: 12px 16px;
+            border-radius: 12px;
+            padding: 4px;
+            gap: 2px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px 4px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .tab.active { background: var(--card); color: var(--gold); }
+        .tab-icon { font-size: 18px; }
+        
+        /* Panel */
+        .panel { display: none; padding: 16px; }
+        .panel.active { display: block; }
+        
+        /* Section */
+        .section { margin-bottom: 20px; }
+        .section-title {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .stat-value { font-size: 28px; font-weight: 700; font-family: monospace; }
+        .stat-value.green { color: var(--green); }
+        .stat-value.red { color: var(--red); }
+        .stat-value.gold { color: var(--gold); }
+        .stat-value.blue { color: var(--blue); }
+        .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        
+        /* Alert */
+        .alert {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .alert-red { background: rgba(239,68,68,0.15); border: 1px solid var(--red); color: var(--red); }
+        .alert-green { background: rgba(16,185,129,0.15); border: 1px solid var(--green); color: var(--green); }
+        .alert-gold { background: rgba(245,158,11,0.15); border: 1px solid var(--gold); color: var(--gold); }
+        
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+        }
+        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .card-meta { font-size: 11px; color: var(--muted); }
+        
+        /* Part Item */
+        .part-item {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .part-icon { font-size: 28px; }
+        .part-info { flex: 1; }
+        .part-name { font-size: 15px; font-weight: 600; }
+        .part-category { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .part-stock {
+            text-align: right;
+        }
+        .part-stock-num {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: monospace;
+        }
+        .part-stock-num.low { color: var(--red); }
+        .part-stock-num.ok { color: var(--green); }
+        .part-stock-unit { font-size: 11px; color: var(--muted); }
+        .part-warning {
+            font-size: 11px;
+            color: var(--red);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* Record Item */
+        .record-item {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--blue);
+        }
+        .record-item.out { border-left-color: var(--red); }
+        .record-item.ret { border-left-color: var(--green); }
+        .record-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .record-title { font-size: 14px; font-weight: 600; }
+        .record-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .badge-out { background: rgba(239,68,68,0.2); color: var(--red); }
+        .badge-ret { background: rgba(16,185,129,0.2); color: var(--green); }
+        .record-meta { font-size: 12px; color: var(--muted); }
+        .record-meta span { margin-right: 12px; }
+        
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            display: flex;
+            z-index: 100;
+        }
+        .nav-item {
+            flex: 1;
+            padding: 12px 4px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-item.active { color: var(--gold); }
+        .nav-icon { font-size: 22px; }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg2);
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-close {
+            width: 32px; height: 32px;
+            background: var(--card);
+            border: none;
+            border-radius: 50%;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        /* Form */
+        .form-group { margin-bottom: 14px; }
+        .form-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: block; }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        /* Number Stepper */
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .stepper-btn {
+            width: 44px; height: 44px;
+            background: var(--card2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .stepper-btn:active { background: var(--gold); }
+        .stepper-val {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: monospace;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        /* Button */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 6px;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--gold), #d97706); color: #000; }
+        .btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+        .btn-danger { background: rgba(239,68,68,0.2); color: var(--red); border: 1px solid var(--red); }
+        .btn:active { transform: scale(0.98); }
+        
+        /* Empty */
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--muted);
+        }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+        .empty-text { font-size: 14px; }
+        
+        /* Filter */
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .filter-row .form-input, .filter-row .form-select {
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+        
+        /* Person tag */
+        .person-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(59,130,246,0.2);
+            color: var(--blue);
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Search */
+        .search-bar {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 15px;
+        }
+        .search-bar input::placeholder { color: var(--muted); }
+        .search-bar input:focus { outline: none; border-color: var(--gold); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+        
+        /* List item */
+        .list-item {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .list-item-info { flex: 1; }
+        .list-item-name { font-size: 14px; font-weight: 600; }
+        .list-item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .list-item-action {
+            color: var(--gold);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        @media (min-width: 500px) {
+            body { padding-bottom: 0; }
+            .bottom-nav { position: static; background: var(--bg2); border: none; border-top: 1px solid var(--border); }
+            .modal { border-radius: 20px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); bottom: auto; max-height: 80vh; }
+            .modal-overlay { align-items: center; }
         }
     </style>
 </head>
-<body class="bg-secondary min-h-screen font-sans text-dark">
-    <!-- 顶部导航栏 -->
-    <header class="glass-effect sticky top-0 z-50 border-b border-gray-200">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-primary">仓库管理系统</h1>
-            <div class="flex items-center space-x-3">
-                <button id="searchBtn" class="p-2 rounded-full hover:bg-gray-200">
-                    <i class="fa fa-search text-medium"></i>
-                </button>
-                <button id="settingsBtn" class="p-2 rounded-full hover:bg-gray-200">
-                    <i class="fa fa-cog text-medium"></i>
-                </button>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top">
+            <div class="logo">
+                <div class="logo-icon">📦</div>
+                <div>
+                    <div class="logo-text">仓库管理</div>
+                    <div class="logo-sub">麻章区鑫旺商行</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="showModal('settingsModal')">⚙️</button>
             </div>
         </div>
     </header>
-
-    <!-- 主内容区域 -->
-    <main class="container mx-auto px-4 py-4 pb-20">
-        <!-- 页面内容将通过JavaScript动态加载 -->
-        <div id="pageContent">
-            <!-- 默认显示仪表盘页面 -->
-        </div>
-    </main>
-
-    <!-- 底部导航栏 -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div class="flex justify-around">
-            <button class="nav-btn flex flex-col items-center py-3 px-5 tab-active" data-page="dashboard">
-                <i class="fa fa-home text-lg"></i>
-                <span class="text-xs mt-1">首页</span>
-            </button>
-            <button class="nav-btn flex flex-col items-center py-3 px-5" data-page="parts">
-                <i class="fa fa-cubes text-lg"></i>
-                <span class="text-xs mt-1">配件</span>
-            </button>
-            <button class="nav-btn flex flex-col items-center py-3 px-5" data-page="checkout">
-                <i class="fa fa-sign-out text-lg"></i>
-                <span class="text-xs mt-1">领用</span>
-            </button>
-            <button class="nav-btn flex flex-col items-center py-3 px-5" data-page="return">
-                <i class="fa fa-sign-in text-lg"></i>
-                <span class="text-xs mt-1">归还</span>
-            </button>
-            <button class="nav-btn flex flex-col items-center py-3 px-5" data-page="records">
-                <i class="fa fa-list-alt text-lg"></i>
-                <span class="text-xs mt-1">记录</span>
-            </button>
-        </div>
+    
+    <!-- Tabs -->
+    <nav class="tabs">
+        <button class="tab active" data-tab="home" onclick="switchTab('home')">
+            <span class="tab-icon">🏠</span>
+            首页
+        </button>
+        <button class="tab" data-tab="parts" onclick="switchTab('parts')">
+            <span class="tab-icon">🧰</span>
+            配件
+        </button>
+        <button class="tab" data-tab="checkout" onclick="switchTab('checkout')">
+            <span class="tab-icon">📤</span>
+            领用
+        </button>
+        <button class="tab" data-tab="records" onclick="switchTab('records')">
+            <span class="tab-icon">📋</span>
+            记录
+        </button>
     </nav>
-
-    <!-- 搜索模态框 -->
-    <div id="searchModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-start justify-center pt-20">
-        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-4">
-            <div class="flex items-center mb-4">
-                <i class="fa fa-search text-medium mr-3"></i>
-                <input type="text" id="searchInput" placeholder="搜索配件名称、型号..." class="input-field">
-                <button id="closeSearchBtn" class="ml-2 p-2">
-                    <i class="fa fa-times text-medium"></i>
-                </button>
-            </div>
-            <div id="searchResults" class="max-h-96 overflow-y-auto">
-                <!-- 搜索结果将在这里显示 -->
-            </div>
+    
+    <!-- Home Panel -->
+    <div id="home-panel" class="panel active">
+        <div class="section">
+            <div class="section-title">📊 库存概览</div>
+            <div class="stats-grid" id="homeStats"></div>
+        </div>
+        
+        <div id="lowStockAlert"></div>
+        
+        <div class="section">
+            <div class="section-title">🚨 库存预警</div>
+            <div id="lowStockList"></div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">📋 今日动态</div>
+            <div id="todayActivity"></div>
         </div>
     </div>
-
-    <!-- 设置模态框 -->
-    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-start justify-center pt-20">
-        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">设置</h2>
-                <button id="closeSettingsBtn" class="p-2">
-                    <i class="fa fa-times text-medium"></i>
-                </button>
-            </div>
-            <div class="space-y-4">
-                <button id="manageMastersBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 flex justify-between items-center">
-                    <span>师傅管理</span>
-                    <i class="fa fa-chevron-right text-medium"></i>
-                </button>
-                <button id="manageCategoriesBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 flex justify-between items-center">
-                    <span>分类管理</span>
-                    <i class="fa fa-chevron-right text-medium"></i>
-                </button>
-                <button id="exportDataBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 flex justify-between items-center">
-                    <span>导出数据</span>
-                    <i class="fa fa-download text-medium"></i>
-                </button>
-                <button id="importDataBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 flex justify-between items-center">
-                    <span>导入数据</span>
-                    <i class="fa fa-upload text-medium"></i>
-                </button>
-                <button id="resetDataBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 flex justify-between items-center text-danger">
-                    <span>重置数据</span>
-                    <i class="fa fa-refresh text-medium"></i>
-                </button>
-            </div>
+    
+    <!-- Parts Panel -->
+    <div id="parts-panel" class="panel">
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchParts" placeholder="搜索配件..." oninput="filterParts()">
         </div>
+        <div id="partsCategoryFilter" class="filter-row"></div>
+        <div id="partsList"></div>
     </div>
-
-    <!-- 师傅管理模态框 -->
-    <div id="mastersModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-start justify-center pt-20">
-        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">师傅管理</h2>
-                <button id="closeMastersBtn" class="p-2">
-                    <i class="fa fa-times text-medium"></i>
-                </button>
-            </div>
-            <div id="mastersList" class="space-y-3 mb-4">
-                <!-- 师傅列表将在这里显示 -->
-            </div>
-            <button id="addMasterBtn" class="btn-primary w-full flex justify-center items-center">
-                <i class="fa fa-plus mr-2"></i> 添加师傅
-            </button>
-        </div>
-    </div>
-
-    <!-- 添加/编辑师傅模态框 -->
-    <div id="editMasterModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-start justify-center pt-20">
-        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 id="editMasterTitle" class="text-lg font-bold">添加师傅</h2>
-                <button id="closeEditMasterBtn" class="p-2">
-                    <i class="fa fa-times text-medium"></i>
-                </button>
-            </div>
-            <form id="editMasterForm" class="space-y-4">
-                <input type="hidden" id="masterId">
-                <div>
-                    <label for="masterName" class="block text-sm font-medium mb-1">姓名</label>
-                    <input type="text" id="masterName" class="input-field" required>
-                </div>
-                <div>
-                    <label for="masterPhone" class="block text-sm font-medium mb-1">电话</label>
-                    <input type="tel" id="masterPhone" class="input-field">
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" id="cancelEditMasterBtn" class="btn-secondary">取消</button>
-                    <button type="submit" class="btn-primary">保存</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 分类管理模态框 -->
-    <div id="categoriesModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-start justify-center pt-20">
-        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">分类管理</h2>
-                <button id="closeCategoriesBtn" class="p-2">
-                    <i class="fa fa-times text-medium"></i>
-                </button>
-            </div>
-            <div id="categoriesList" class="space-y-3 mb-4">
-                <!-- 分类列表将在这里显示 -->
-            </div>
-            <div class="flex">
-                <input type="text" id="newCategoryInput" placeholder="新分类名称" class="input-field flex-1 mr-2">
-                <button id="addCategoryBtn" class="btn-primary whitespace-nowrap">
-                    <i class="fa fa-plus mr-1"></i> 添加
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 添加/编辑配件模态框 -->
-    <div id="editPartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-start justify-center pt-5">
-        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 id="editPartTitle" class="text-lg font-bold">添加配件</h2>
-                <button id="closeEditPartBtn" class="p-2">
-                    <i class="fa fa-times text-medium"></i>
-                </button>
-            </div>
-            <form id="editPartForm" class="space-y-4">
-                <input type="hidden" id="partId">
-                <div>
-                    <label for="partName" class="block text-sm font-medium mb-1">配件名称 <span class="text-danger">*</span></label>
-                    <input type="text" id="partName" class="input-field" required>
-                </div>
-                <div>
-                    <label for="partModel" class="block text-sm font-medium mb-1">型号规格</label>
-                    <input type="text" id="partModel" class="input-field">
-                </div>
-                <div>
-                    <label for="partCategory" class="block text-sm font-medium mb-1">分类</label>
-                    <select id="partCategory" class="input-field">
-                        <!-- 分类选项将在这里动态添加 -->
+    
+    <!-- Checkout Panel -->
+    <div id="checkout-panel" class="panel">
+        <div class="section">
+            <div class="section-title">📤 领用配件</div>
+            <div class="card">
+                <div class="form-group">
+                    <label class="form-label">配件名称</label>
+                    <select class="form-select" id="checkoutPart" onchange="updateCheckoutStock()">
+                        <option value="">请选择配件</option>
                     </select>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="partTotalQuantity" class="block text-sm font-medium mb-1">总数量 <span class="text-danger">*</span></label>
-                        <input type="number" id="partTotalQuantity" class="input-field" min="0" required>
-                    </div>
-                    <div>
-                        <label for="partUnit" class="block text-sm font-medium mb-1">单位</label>
-                        <input type="text" id="partUnit" class="input-field" value="个">
-                    </div>
-                </div>
-                <div>
-                    <label for="partMinStock" class="block text-sm font-medium mb-1">最小库存警告</label>
-                    <input type="number" id="partMinStock" class="input-field" min="0" value="1">
-                </div>
-                <div>
-                    <label for="partBarcode" class="block text-sm font-medium mb-1">条码</label>
-                    <div class="flex">
-                        <input type="text" id="partBarcode" class="input-field flex-1 mr-2">
-                        <button type="button" id="scanBarcodeBtn" class="btn-secondary whitespace-nowrap">
-                            <i class="fa fa-qrcode mr-1"></i> 扫描
-                        </button>
-                    </div>
-                </div>
-                <div>
-                    <label for="partNotes" class="block text-sm font-medium mb-1">备注</label>
-                    <textarea id="partNotes" class="input-field" rows="3"></textarea>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" id="cancelEditPartBtn" class="btn-secondary">取消</button>
-                    <button type="submit" class="btn-primary">保存</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 领用配件模态框 -->
-    <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-start justify-center pt-5">
-        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">领用配件</h2>
-                <button id="closeCheckoutBtn" class="p-2">
-                    <i class="fa fa-times text-medium"></i>
-                </button>
-            </div>
-            <form id="checkoutForm" class="space-y-4">
-                <div>
-                    <label for="checkoutMaster" class="block text-sm font-medium mb-1">选择师傅 <span class="text-danger">*</span></label>
-                    <select id="checkoutMaster" class="input-field" required>
-                        <!-- 师傅选项将在这里动态添加 -->
+                <div id="checkoutStockInfo" style="text-align:center;margin-bottom:12px;font-size:13px;color:var(--muted);"></div>
+                <div class="form-group">
+                    <label class="form-label">领取人</label>
+                    <select class="form-select" id="checkoutPerson">
+                        <option value="">请选择领取人</option>
                     </select>
                 </div>
-                <div>
-                    <label for="checkoutPart" class="block text-sm font-medium mb-1">选择配件 <span class="text-danger">*</span></label>
-                    <div class="flex">
-                        <select id="checkoutPart" class="input-field flex-1 mr-2" required>
-                            <!-- 配件选项将在这里动态添加 -->
-                        </select>
-                        <button type="button" id="scanPartBtn" class="btn-secondary whitespace-nowrap">
-                            <i class="fa fa-qrcode mr-1"></i> 扫描
-                        </button>
+                <div class="form-group">
+                    <label class="form-label">领取数量</label>
+                    <div class="stepper">
+                        <button class="stepper-btn" onclick="changeQty('checkoutQty', -1)">−</button>
+                        <span class="stepper-val" id="checkoutQty">1</span>
+                        <button class="stepper-btn" onclick="changeQty('checkoutQty', 1)">+</button>
                     </div>
                 </div>
-                <div>
-                    <label for="checkoutQuantity" class="block text-sm font-medium mb-1">领用数量 <span class="text-danger">*</span></label>
-                    <input type="number" id="checkoutQuantity" class="input-field" min="1" value="1" required>
+                <div class="form-group">
+                    <label class="form-label">备注（可选）</label>
+                    <input type="text" class="form-input" id="checkoutNote" placeholder="备注信息...">
                 </div>
-                <div>
-                    <label for="checkoutPurpose" class="block text-sm font-medium mb-1">用途/客户信息</label>
-                    <input type="text" id="checkoutPurpose" class="input-field" placeholder="例如：客户名称或维修项目">
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" id="cancelCheckoutBtn" class="btn-secondary">取消</button>
-                    <button type="submit" class="btn-primary">确认领用</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 归还配件模态框 -->
-    <div id="returnModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-start justify-center pt-5">
-        <div class="bg-white rounded-xl w-full max-w-md mx-4 p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">归还配件</h2>
-                <button id="closeReturnBtn" class="p-2">
-                    <i class="fa fa-times text-medium"></i>
-                </button>
-            </div>
-            <form id="returnForm" class="space-y-4">
-                <input type="hidden" id="recordId">
-                <input type="hidden" id="originalQuantity">
-                <div class="card">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 id="returnPartName" class="font-bold"></h3>
-                            <p id="returnPartModel" class="text-sm text-medium"></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm text-medium">共领用</p>
-                            <span id="returnQuantity" class="text-lg font-bold"></span>
-                        </div>
-                    </div>
-                    <div class="mt-2 text-sm">
-                        <p><span class="text-medium">领用师傅：</span><span id="returnMasterName"></span></p>
-                        <p><span class="text-medium">领用时间：</span><span id="returnCheckoutTime"></span></p>
-                        <p><span class="text-medium">用途：</span><span id="returnPurpose"></span></p>
-                    </div>
-                </div>
-                <div>
-                    <label for="returnQuantityInput" class="block text-sm font-medium mb-1">归还数量 <span class="text-danger">*</span></label>
-                    <div class="flex items-center">
-                        <button type="button" id="decreaseQuantity" class="w-10 h-10 bg-gray-100 rounded-l-lg flex items-center justify-center hover:bg-gray-200">
-                            <i class="fa fa-minus"></i>
-                        </button>
-                        <input type="number" id="returnQuantityInput" class="input-field text-center mx-0 border-l-0 border-r-0 rounded-none" min="1" value="1" required>
-                        <button type="button" id="increaseQuantity" class="w-10 h-10 bg-gray-100 rounded-r-lg flex items-center justify-center hover:bg-gray-200">
-                            <i class="fa fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">归还状态 <span class="text-danger">*</span></label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <label class="flex flex-col items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="returnCondition" value="good" class="sr-only" checked>
-                            <div class="w-6 h-6 rounded-full border-2 border-primary flex items-center justify-center mb-1 return-radio">
-                                <div class="w-3 h-3 rounded-full bg-primary hidden return-radio-dot"></div>
-                            </div>
-                            <span class="text-sm">完好</span>
-                        </label>
-                        <label class="flex flex-col items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="returnCondition" value="damaged" class="sr-only">
-                            <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center mb-1 return-radio">
-                                <div class="w-3 h-3 rounded-full bg-primary hidden return-radio-dot"></div>
-                            </div>
-                            <span class="text-sm">损坏</span>
-                        </label>
-                        <label class="flex flex-col items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="returnCondition" value="lost" class="sr-only">
-                            <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center mb-1 return-radio">
-                                <div class="w-3 h-3 rounded-full bg-primary hidden return-radio-dot"></div>
-                            </div>
-                            <span class="text-sm">丢失</span>
-                        </label>
-                    </div>
-                </div>
-                <div>
-                    <label for="returnNotes" class="block text-sm font-medium mb-1">备注</label>
-                    <textarea id="returnNotes" class="input-field" rows="2" placeholder="例如：损坏原因或其他说明"></textarea>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" id="cancelReturnBtn" class="btn-secondary">取消</button>
-                    <button type="submit" class="btn-primary">确认归还</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 扫码模态框 -->
-    <div id="scanModal" class="fixed inset-0 bg-black z-50 hidden flex flex-col">
-        <div class="flex justify-between items-center p-4 bg-black text-white">
-            <button id="closeScanBtn" class="p-2">
-                <i class="fa fa-times text-xl"></i>
-            </button>
-            <h2 class="text-lg font-bold">扫描条码</h2>
-            <button id="switchCameraBtn" class="p-2">
-                <i class="fa fa-refresh text-xl"></i>
-            </button>
-        </div>
-        <div class="flex-1 flex items-center justify-center">
-            <video id="scanVideo" class="w-full h-full object-cover"></video>
-            <div id="scanOverlay" class="absolute inset-0 flex items-center justify-center">
-                <div class="w-64 h-64 border-4 border-white relative">
-                    <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white -mt-2 -ml-2"></div>
-                    <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white -mt-2 -mr-2"></div>
-                    <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white -mb-2 -ml-2"></div>
-                    <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white -mb-2 -mr-2"></div>
-                </div>
+                <button class="btn btn-primary" onclick="doCheckout()">📤 确认领用</button>
             </div>
         </div>
-        <div class="bg-black text-white p-4 text-center">
-            <p>将条码/二维码对准扫描区域</p>
-        </div>
-    </div>
-
-    <!-- 确认对话框 -->
-    <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-xl w-full max-w-xs mx-4 p-4">
-            <h3 id="confirmTitle" class="text-lg font-bold text-center mb-3">确认操作</h3>
-            <p id="confirmMessage" class="text-center mb-6">您确定要执行此操作吗？</p>
-            <div class="flex justify-center space-x-3">
-                <button id="cancelConfirmBtn" class="btn-secondary">取消</button>
-                <button id="acceptConfirmBtn" class="btn-danger">确认</button>
+        
+        <div class="section">
+            <div class="section-title">📥 归还配件</div>
+            <div class="card">
+                <div class="form-group">
+                    <label class="form-label">配件名称</label>
+                    <select class="form-select" id="returnPart" onchange="updateReturnList()">
+                        <option value="">请选择配件</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">归还人</label>
+                    <select class="form-select" id="returnPerson">
+                        <option value="">请选择归还人</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">归还数量</label>
+                    <div class="stepper">
+                        <button class="stepper-btn" onclick="changeQty('returnQty', -1)">−</button>
+                        <span class="stepper-val" id="returnQty">1</span>
+                        <button class="stepper-btn" onclick="changeQty('returnQty', 1)">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">备注（可选）</label>
+                    <input type="text" class="form-input" id="returnNote" placeholder="备注信息...">
+                </div>
+                <button class="btn btn-secondary" onclick="doReturn()">📥 确认归还</button>
             </div>
         </div>
     </div>
-
-    <!-- 提示消息 -->
-    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-dark text-white px-4 py-2 rounded-lg shadow-lg z-50 hidden">
-        <span id="toastMessage"></span>
+    
+    <!-- Records Panel -->
+    <div id="records-panel" class="panel">
+        <div class="filter-row">
+            <select class="form-input" id="filterType" onchange="loadRecords()">
+                <option value="">全部类型</option>
+                <option value="out">领用</option>
+                <option value="ret">归还</option>
+            </select>
+            <select class="form-input" id="filterPerson" onchange="loadRecords()">
+                <option value="">全部人员</option>
+            </select>
+        </div>
+        <div class="filter-row">
+            <input type="date" class="form-input" id="filterDate" onchange="loadRecords()">
+        </div>
+        <div id="recordsList"></div>
+    </div>
+    
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('home')">
+            <span class="nav-icon">🏠</span>
+            首页
+        </button>
+        <button class="nav-item" onclick="switchTab('parts')">
+            <span class="nav-icon">🧰</span>
+            配件
+        </button>
+        <button class="nav-item" onclick="switchTab('checkout')">
+            <span class="nav-icon">📤</span>
+            领用
+        </button>
+        <button class="nav-item" onclick="switchTab('records')">
+            <span class="nav-icon">📋</span>
+            记录
+        </button>
+    </nav>
+    
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ 系统设置</div>
+                <button class="modal-close" onclick="closeModal('settingsModal')">×</button>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">👷 人员管理</div>
+                <div id="personList"></div>
+                <button class="btn btn-secondary" onclick="showAddPerson()">➕ 添加人员</button>
+            </div>
+            
+            <div class="section" style="margin-top:20px;">
+                <div class="section-title">🗂️ 配件分类</div>
+                <div id="categoryList"></div>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                    <input type="text" class="form-input" id="newCategoryInput" placeholder="新分类名称" style="flex:1;">
+                    <button class="btn btn-secondary" onclick="addCategory()" style="width:auto;padding:12px 16px;">添加</button>
+                </div>
+            </div>
+            
+            <div class="section" style="margin-top:20px;">
+                <div class="section-title">📦 配件管理</div>
+                <div id="allPartsManage"></div>
+                <button class="btn btn-secondary" onclick="showAddPart()">➕ 添加配件</button>
+            </div>
+            
+            <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+                <button class="btn btn-danger" onclick="exportData()">📤 导出数据</button>
+                <button class="btn btn-secondary" onclick="importData()" style="margin-top:8px;">📥 导入数据</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Part Modal -->
+    <div class="modal-overlay" id="addPartModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="addPartTitle">➕ 添加配件</div>
+                <button class="modal-close" onclick="closeModal('addPartModal')">×</button>
+            </div>
+            <input type="hidden" id="editPartId">
+            <div class="form-group">
+                <label class="form-label">配件名称 *</label>
+                <input type="text" class="form-input" id="partNameInput" placeholder="如：油泵、喷油嘴">
+            </div>
+            <div class="form-group">
+                <label class="form-label">规格型号</label>
+                <input type="text" class="form-input" id="partModelInput" placeholder="如：CD-100、12V">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">库存数量</label>
+                    <input type="number" class="form-input" id="partStockInput" placeholder="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">警戒库存</label>
+                    <input type="number" class="form-input" id="partAlertInput" placeholder="5" min="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">分类</label>
+                <select class="form-select" id="partCategoryInput"></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <input type="text" class="form-input" id="partNoteInput" placeholder="备注信息...">
+            </div>
+            <button class="btn btn-primary" onclick="savePart()">💾 保存配件</button>
+        </div>
+    </div>
+    
+    <!-- Add Person Modal -->
+    <div class="modal-overlay" id="addPersonModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">👷 添加人员</div>
+                <button class="modal-close" onclick="closeModal('addPersonModal')">×</button>
+            </div>
+            <input type="hidden" id="editPersonId">
+            <div class="form-group">
+                <label class="form-label">姓名 *</label>
+                <input type="text" class="form-input" id="personNameInput" placeholder="姓名">
+            </div>
+            <div class="form-group">
+                <label class="form-label">电话</label>
+                <input type="tel" class="form-input" id="personPhoneInput" placeholder="手机号码">
+            </div>
+            <div class="form-group">
+                <label class="form-label">角色</label>
+                <select class="form-select" id="personRoleInput">
+                    <option value="driver">司机</option>
+                    <option value="worker">工人</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="savePerson()">💾 保存</button>
+        </div>
+    </div>
+    
+    <!-- Part Detail Modal -->
+    <div class="modal-overlay" id="partDetailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="detailTitle">配件详情</div>
+                <button class="modal-close" onclick="closeModal('partDetailModal')">×</button>
+            </div>
+            <div id="detailContent"></div>
+        </div>
     </div>
 
-    <script>
-        // 初始化数据
-        const initData = () => {
-            // 检查是否已有数据
-            // 为了更新数据，暂时注释掉这行，强制重新初始化
-            // if (localStorage.getItem('warehouseData')) {
-            //     return;
-            // }
-            // 清除旧数据
-            localStorage.removeItem('warehouseData');
+<script>
+// ==================== 数据模型 ====================
+const DEFAULT_DATA = {
+    persons: [
+        { id: 1, name: '莫哥', phone: '', role: 'driver' },
+        { id: 2, name: '李吟', phone: '', role: 'driver' },
+        { id: 3, name: '王琼', phone: '', role: 'driver' },
+        { id: 4, name: '光福', phone: '', role: 'driver' }
+    ],
+    categories: [
+        { id: 1, name: '油泵' },
+        { id: 2, name: '喷油嘴' },
+        { id: 3, name: '点火配件' },
+        { id: 4, name: '胶带管材' },
+        { id: 5, name: '其他' }
+    ],
+    parts: [
+        { id: 1, name: '油泵', model: '标准型', stock: 12, alertStock: 3, categoryId: 1, note: '', history: [] },
+        { id: 2, name: '油泵', model: '高压型', stock: 5, alertStock: 2, categoryId: 1, note: '', history: [] },
+        { id: 3, name: '喷油嘴', model: '细雾型', stock: 20, alertStock: 5, categoryId: 2, note: '', history: [] },
+        { id: 4, name: '喷油嘴', model: '标准型', stock: 8, alertStock: 3, categoryId: 2, note: '', history: [] },
+        { id: 5, name: '点火器', model: '12V', stock: 6, alertStock: 2, categoryId: 3, note: '', history: [] },
+        { id: 6, name: '高压包', model: '通用', stock: 4, alertStock: 2, categoryId: 3, note: '', history: [] },
+        { id: 7, name: '耐高温胶带', model: '10米', stock: 15, alertStock: 5, categoryId: 4, note: '', history: [] },
+        { id: 8, name: '油管', model: 'DN8', stock: 10, alertStock: 3, categoryId: 4, note: '', history: [] },
+        { id: 9, name: '法兰盘', model: '标准', stock: 6, alertStock: 2, categoryId: 5, note: '', history: [] },
+        { id: 10, name: '密封圈', model: '套装', stock: 30, alertStock: 10, categoryId: 5, note: '', history: [] }
+    ],
+    records: [],
+    nextPartId: 11,
+    nextPersonId: 5,
+    nextCategoryId: 6
+};
 
-            // 初始化师傅数据
-            const masters = [
-                { id: 'm1', name: '莫哥', phone: '', avatar: '' },
-                { id: 'm2', name: '李吟', phone: '', avatar: '' },
-                { id: 'm3', name: '王琼', phone: '', avatar: '' },
-                { id: 'm4', name: '光福', phone: '', avatar: '' }
-            ];
+// ==================== 初始化 ====================
+let data = JSON.parse(localStorage.getItem('warehouseData')) || DEFAULT_DATA;
 
-            // 初始化分类数据
-            const categories = [
-                { id: 'c1', name: '油泵油嘴' },
-                { id: 'c2', name: '风机' },
-                { id: 'c3', name: '点火配件' },
-                { id: 'c4', name: '胶带' },
-                { id: 'c5', name: '其他配件' }
-            ];
+function save() {
+    localStorage.setItem('warehouseData', JSON.stringify(data));
+}
 
-            // 初始化配件数据
-            const parts = [
-                // 油泵和油嘴
-                { 
-                    id: 'p1', 
-                    name: '油泵', 
-                    model: '', 
-                    category: 'c1', 
-                    totalQuantity: 30, 
-                    availableQuantity: 30, 
-                    unit: '个', 
-                    barcode: '1000000000001', 
-                    image: '', 
-                    minStock: 5, 
-                    notes: '' 
-                },
-                { 
-                    id: 'p2', 
-                    name: '油嘴', 
-                    model: '0.75', 
-                    category: 'c1', 
-                    totalQuantity: 50, 
-                    availableQuantity: 50, 
-                    unit: '个', 
-                    barcode: '1000000000002', 
-                    image: '', 
-                    minStock: 10, 
-                    notes: '0.75规格油嘴' 
-                },
-                { 
-                    id: 'p3', 
-                    name: '油嘴', 
-                    model: '0.6', 
-                    category: 'c1', 
-                    totalQuantity: 50, 
-                    availableQuantity: 50, 
-                    unit: '个', 
-                    barcode: '1000000000003', 
-                    image: '', 
-                    minStock: 10, 
-                    notes: '0.6规格油嘴' 
-                },
-                { 
-                    id: 'p4', 
-                    name: '油嘴', 
-                    model: '1.25', 
-                    category: 'c1', 
-                    totalQuantity: 40, 
-                    availableQuantity: 40, 
-                    unit: '个', 
-                    barcode: '1000000000004', 
-                    image: '', 
-                    minStock: 8, 
-                    notes: '1.25规格油嘴' 
-                },
-                { 
-                    id: 'p5', 
-                    name: '油嘴', 
-                    model: '2.0', 
-                    category: 'c1', 
-                    totalQuantity: 40, 
-                    availableQuantity: 40, 
-                    unit: '个', 
-                    barcode: '1000000000005', 
-                    image: '', 
-                    minStock: 8, 
-                    notes: '2.0规格油嘴' 
-                },
-                { 
-                    id: 'p6', 
-                    name: '油嘴', 
-                    model: '2.75', 
-                    category: 'c1', 
-                    totalQuantity: 30, 
-                    availableQuantity: 30, 
-                    unit: '个', 
-                    barcode: '1000000000006', 
-                    image: '', 
-                    minStock: 5, 
-                    notes: '2.75规格油嘴' 
-                },
-                
-                // 风机
-                { 
-                    id: 'p7', 
-                    name: '风机', 
-                    model: '120w', 
-                    category: 'c2', 
-                    totalQuantity: 20, 
-                    availableQuantity: 20, 
-                    unit: '个', 
-                    barcode: '1000000000007', 
-                    image: '', 
-                    minStock: 3, 
-                    notes: '120瓦风机' 
-                },
-                { 
-                    id: 'p8', 
-                    name: '风机', 
-                    model: '180w', 
-                    category: 'c2', 
-                    totalQuantity: 20, 
-                    availableQuantity: 20, 
-                    unit: '个', 
-                    barcode: '1000000000008', 
-                    image: '', 
-                    minStock: 3, 
-                    notes: '180瓦风机' 
-                },
-                { 
-                    id: 'p9', 
-                    name: '风机', 
-                    model: '550w', 
-                    category: 'c2', 
-                    totalQuantity: 15, 
-                    availableQuantity: 15, 
-                    unit: '个', 
-                    barcode: '1000000000009', 
-                    image: '', 
-                    minStock: 2, 
-                    notes: '550瓦风机' 
-                },
-                { 
-                    id: 'p10', 
-                    name: '圆桶风机', 
-                    model: '', 
-                    category: 'c2', 
-                    totalQuantity: 10, 
-                    availableQuantity: 10, 
-                    unit: '个', 
-                    barcode: '1000000000010', 
-                    image: '', 
-                    minStock: 2, 
-                    notes: '' 
-                },
-                
-                // 高压包和点火针
-                { 
-                    id: 'p11', 
-                    name: '高压包', 
-                    model: '控制板', 
-                    category: 'c3', 
-                    totalQuantity: 25, 
-                    availableQuantity: 25, 
-                    unit: '个', 
-                    barcode: '1000000000011', 
-                    image: '', 
-                    minStock: 5, 
-                    notes: '控制板高压包' 
-                },
-                { 
-                    id: 'p12', 
-                    name: '高压包', 
-                    model: '自流炉', 
-                    category: 'c3', 
-                    totalQuantity: 25, 
-                    availableQuantity: 25, 
-                    unit: '个', 
-                    barcode: '1000000000012', 
-                    image: '', 
-                    minStock: 5, 
-                    notes: '自流炉高压包' 
-                },
-                { 
-                    id: 'p13', 
-                    name: '点火针', 
-                    model: '双针', 
-                    category: 'c3', 
-                    totalQuantity: 40, 
-                    availableQuantity: 40, 
-                    unit: '个', 
-                    barcode: '1000000000013', 
-                    image: '', 
-                    minStock: 8, 
-                    notes: '双针点火' 
-                },
-                { 
-                    id: 'p14', 
-                    name: '点火针', 
-                    model: '单针', 
-                    category: 'c3', 
-                    totalQuantity: 40, 
-                    availableQuantity: 40, 
-                    unit: '个', 
-                    barcode: '1000000000014', 
-                    image: '', 
-                    minStock: 8, 
-                    notes: '单针点火' 
-                },
-                
-                // 其他配件
-                { 
-                    id: 'p15', 
-                    name: '电工胶带', 
-                    model: '', 
-                    category: 'c4', 
-                    totalQuantity: 100, 
-                    availableQuantity: 100, 
-                    unit: '卷', 
-                    barcode: '1000000000015', 
-                    image: '', 
-                    minStock: 20, 
-                    notes: '' 
-                },
-                { 
-                    id: 'p16', 
-                    name: '水胶带', 
-                    model: '', 
-                    category: 'c4', 
-                    totalQuantity: 80, 
-                    availableQuantity: 80, 
-                    unit: '卷', 
-                    barcode: '1000000000016', 
-                    image: '', 
-                    minStock: 15, 
-                    notes: '' 
-                },
-                { 
-                    id: 'p17', 
-                    name: '节能炉完整套', 
-                    model: '', 
-                    category: 'c5', 
-                    totalQuantity: 15, 
-                    availableQuantity: 15, 
-                    unit: '套', 
-                    barcode: '1000000000017', 
-                    image: '', 
-                    minStock: 3, 
-                    notes: '' 
-                },
-                { 
-                    id: 'p18', 
-                    name: '炉膛', 
-                    model: '', 
-                    category: 'c5', 
-                    totalQuantity: 20, 
-                    availableQuantity: 20, 
-                    unit: '个', 
-                    barcode: '1000000000018', 
-                    image: '', 
-                    minStock: 4, 
-                    notes: '' 
-                },
-                { 
-                    id: 'p19', 
-                    name: '水龙头', 
-                    model: '摇摆', 
-                    category: 'c5', 
-                    totalQuantity: 30, 
-                    availableQuantity: 30, 
-                    unit: '个', 
-                    barcode: '1000000000019', 
-                    image: '', 
-                    minStock: 5, 
-                    notes: '摇摆水龙头' 
-                },
-                { 
-                    id: 'p20', 
-                    name: '水龙头', 
-                    model: '长脖子', 
-                    category: 'c5', 
-                    totalQuantity: 30, 
-                    availableQuantity: 30, 
-                    unit: '个', 
-                    barcode: '1000000000020', 
-                    image: '', 
-                    minStock: 5, 
-                    notes: '长脖子水龙头' 
-                }
-            ];
+function getCategoryName(id) {
+    const c = data.categories.find(x => x.id === id);
+    return c ? c.name : '其他';
+}
 
-            // 初始化记录数据
-            const records = [];
+function getPersonName(id) {
+    const p = data.persons.find(x => x.id === id);
+    return p ? p.name : '未知';
+}
 
-            // 保存到本地存储
-            const warehouseData = {
-                masters,
-                categories,
-                parts,
-                records,
-                lastUpdated: new Date().toISOString()
-            };
+function formatDate(d) {
+    const dt = new Date(d);
+    const now = new Date();
+    const isToday = dt.toDateString() === now.toDateString();
+    if (isToday) {
+        return '今天 ' + dt.toTimeString().slice(0,5);
+    }
+    return `${dt.getMonth()+1}/${dt.getDate()} ${dt.toTimeString().slice(0,5)}`;
+}
 
-            localStorage.setItem('warehouseData', JSON.stringify(warehouseData));
-        };
+// ==================== 页面切换 ====================
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === tab + '-panel'));
+    document.querySelectorAll('.nav-item').forEach((n, i) => {
+        const tabs = ['home','parts','checkout','records'];
+        n.classList.toggle('active', tabs[i] === tab);
+    });
+    
+    if (tab === 'home') renderHome();
+    if (tab === 'parts') renderParts();
+    if (tab === 'checkout') initCheckout();
+    if (tab === 'records') loadRecords();
+}
 
-        // 获取数据
-        const getData = () => {
-            const data = localStorage.getItem('warehouseData');
-            return data ? JSON.parse(data) : {
-                masters: [],
-                categories: [],
-                parts: [],
-                records: [],
-                lastUpdated: new Date().toISOString()
-            };
-        };
+// ==================== 首页 ====================
+function renderHome() {
+    const totalStock = data.parts.reduce((s, p) => s + p.stock, 0);
+    const lowStock = data.parts.filter(p => p.stock <= p.alertStock);
+    const todayRecords = data.records.filter(r => {
+        const d = new Date(r.time);
+        const now = new Date();
+        return d.toDateString() === now.toDateString();
+    });
+    const outToday = todayRecords.filter(r => r.type === 'out').length;
+    const retToday = todayRecords.filter(r => r.type === 'ret').length;
+    
+    document.getElementById('homeStats').innerHTML = `
+        <div class="stat-card">
+            <div class="stat-value green">${totalStock}</div>
+            <div class="stat-label">总库存</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value blue">${data.parts.length}</div>
+            <div class="stat-label">配件种类</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value gold">${outToday}</div>
+            <div class="stat-label">今日领用</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value red">${lowStock.length}</div>
+            <div class="stat-label">库存预警</div>
+        </div>
+    `;
+    
+    // 库存预警
+    if (lowStock.length > 0) {
+        document.getElementById('lowStockAlert').innerHTML = `
+            <div class="alert alert-red">
+                ⚠️ 有 ${lowStock.length} 种配件库存低于警戒线！
+            </div>
+        `;
+        document.getElementById('lowStockList').innerHTML = lowStock.map(p => `
+            <div class="card" onclick="showPartDetail(${p.id})">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div class="card-title">${p.name}${p.model ? ' (' + p.model + ')' : ''}</div>
+                        <div class="card-meta">${getCategoryName(p.categoryId)} · 警戒：${p.alertStock}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="stat-value red" style="font-size:24px;">${p.stock}</div>
+                        <div class="stat-label">当前库存</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        document.getElementById('lowStockAlert').innerHTML = `
+            <div class="alert alert-green">✅ 所有配件库存正常</div>
+        `;
+        document.getElementById('lowStockList').innerHTML = '';
+    }
+    
+    // 今日动态
+    if (todayRecords.length > 0) {
+        document.getElementById('todayActivity').innerHTML = todayRecords.slice(0,5).map(r => `
+            <div class="card" style="padding:10px 14px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <span style="font-size:16px;">${r.type === 'out' ? '📤' : '📥'}</span>
+                        <span style="font-size:14px;font-weight:600;">${r.partName}</span>
+                        <span class="person-tag">${getPersonName(r.personId)}</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:14px;font-weight:700;color:${r.type==='out'?var_red:var_green}">${r.type==='out'?'-':'+'}${r.qty}</span>
+                        <div style="font-size:10px;color:var(--muted)">${formatDate(r.time)}</div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        document.getElementById('todayActivity').innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">今日暂无记录</div></div>';
+    }
+}
 
-        // 保存数据
-        const saveData = (data) => {
-            data.lastUpdated = new Date().toISOString();
-            localStorage.setItem('warehouseData', JSON.stringify(data));
-        };
+// ==================== 配件列表 ====================
+function renderParts() {
+    // 分类筛选
+    document.getElementById('partsCategoryFilter').innerHTML = `
+        <select class="form-input" id="filterCategory" onchange="filterParts()">
+            <option value="">全部分类</option>
+            ${data.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+        </select>
+    `;
+    
+    filterParts();
+}
 
-        // 生成唯一ID
-        const generateId = (prefix) => {
-            return `${prefix}${Date.now()}${Math.floor(Math.random() * 1000)}`;
-        };
+function filterParts() {
+    const search = document.getElementById('searchParts').value.toLowerCase();
+    const catId = parseInt(document.getElementById('filterCategory')?.value) || 0;
+    
+    let parts = data.parts;
+    if (search) parts = parts.filter(p => p.name.includes(search) || (p.model && p.model.includes(search)));
+    if (catId) parts = parts.filter(p => p.categoryId === catId);
+    
+    if (parts.length === 0) {
+        document.getElementById('partsList').innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">没有找到匹配的配件</div></div>';
+        return;
+    }
+    
+    document.getElementById('partsList').innerHTML = parts.map(p => {
+        const isLow = p.stock <= p.alertStock;
+        return `
+            <div class="part-item" onclick="showPartDetail(${p.id})">
+                <div class="part-icon">${getCategoryIcon(p.categoryId)}</div>
+                <div class="part-info">
+                    <div class="part-name">${p.name}${p.model ? ' <span style="font-size:12px;color:var(--muted)">'+p.model+'</span>' : ''}</div>
+                    <div class="part-category">${getCategoryName(p.categoryId)}</div>
+                    ${isLow ? '<div class="part-warning">⚠️ 低于警戒库存</div>' : ''}
+                </div>
+                <div class="part-stock">
+                    <div class="part-stock-num ${isLow ? 'low' : 'ok'}">${p.stock}</div>
+                    <div class="part-stock-unit">件</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
 
-        // 显示提示消息
-        const showToast = (message, duration = 3000) => {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            
-            toastMessage.textContent = message;
-            toast.classList.remove('hidden');
-            
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, duration);
-        };
+function getCategoryIcon(catId) {
+    const icons = { 1: '⛽', 2: '💨', 3: '⚡', 4: '🔧', 5: '📦' };
+    return icons[catId] || '📦';
+}
 
-        // 显示确认对话框
-        const showConfirm = (title, message, onConfirm) => {
-            const confirmModal = document.getElementById('confirmModal');
-            const confirmTitle = document.getElementById('confirmTitle');
-            const confirmMessage = document.getElementById('confirmMessage');
-            const acceptConfirmBtn = document.getElementById('acceptConfirmBtn');
-            const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
-            
-            confirmTitle.textContent = title;
-            confirmMessage.textContent = message;
-            confirmModal.classList.remove('hidden');
-            
-            const handleAccept = () => {
-                onConfirm();
-                confirmModal.classList.add('hidden');
-                acceptConfirmBtn.removeEventListener('click', handleAccept);
-                cancelConfirmBtn.removeEventListener('click', handleCancel);
-            };
-            
-            const handleCancel = () => {
-                confirmModal.classList.add('hidden');
-                acceptConfirmBtn.removeEventListener('click', handleAccept);
-                cancelConfirmBtn.removeEventListener('click', handleCancel);
-            };
-            
-            acceptConfirmBtn.addEventListener('click', handleAccept);
-            cancelConfirmBtn.addEventListener('click', handleCancel);
-        };
+// ==================== 配件详情 ====================
+function showPartDetail(id) {
+    const p = data.parts.find(x => x.id === id);
+    if (!p) return;
+    
+    const isLow = p.stock <= p.alertStock;
+    const hist = data.records.filter(r => r.partId === id).slice(-10).reverse();
+    
+    document.getElementById('detailTitle').textContent = p.name + (p.model ? ' (' + p.model + ')' : '');
+    document.getElementById('detailContent').innerHTML = `
+        <div class="stats-grid" style="margin-bottom:16px;">
+            <div class="stat-card">
+                <div class="stat-value ${isLow ? 'red' : 'green'}">${p.stock}</div>
+                <div class="stat-label">当前库存</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value gold">${p.alertStock}</div>
+                <div class="stat-label">警戒库存</div>
+            </div>
+        </div>
+        ${isLow ? '<div class="alert alert-red">⚠️ 库存低于警戒线，请及时补充！</div>' : ''}
+        
+        <div class="card" style="margin-bottom:12px;">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">分类</div>
+            <div style="font-size:14px;font-weight:600;">${getCategoryName(p.categoryId)}</div>
+        </div>
+        ${p.model ? `<div class="card" style="margin-bottom:12px;"><div style="font-size:13px;color:var(--muted);margin-bottom:4px;">规格型号</div><div style="font-size:14px;">${p.model}</div></div>` : ''}
+        ${p.note ? `<div class="card" style="margin-bottom:12px;"><div style="font-size:13px;color:var(--muted);margin-bottom:4px;">备注</div><div style="font-size:14px;">${p.note}</div></div>` : ''}
+        
+        <div class="section-title">📋 最近记录</div>
+        ${hist.length === 0 ? '<div class="empty"><div class="empty-text">暂无记录</div></div>' : hist.map(r => `
+            <div class="record-item ${r.type === 'out' ? 'out' : 'ret'}">
+                <div class="record-header">
+                    <div class="record-title">${r.type === 'out' ? '领用' : '归还'} ${r.qty}件</div>
+                    <span class="record-badge badge-${r.type}">${r.type === 'out' ? '领用' : '归还'}</span>
+                </div>
+                <div class="record-meta">
+                    <span>👤 ${getPersonName(r.personId)}</span>
+                    <span>⏰ ${formatDate(r.time)}</span>
+                </div>
+                ${r.note ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;">📝 ${r.note}</div>` : ''}
+            </div>
+        `).join('')}
+        
+        <button class="btn btn-secondary" onclick="editPartFromDetail(${p.id})" style="margin-top:16px;">✏️ 编辑配件</button>
+    `;
+    
+    showModal('partDetailModal');
+}
 
-        // 格式化日期时间
-        const formatDateTime = (dateString) => {
-            if (!dateString) return '';
-            
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            
-            return `${year}-${month}-${day} ${hours}:${minutes}`;
-        };
+function editPartFromDetail(id) {
+    closeModal('partDetailModal');
+    editPart(id);
+}
 
-        // 获取状态标签
-        const getStatusBadge = (status) => {
-            switch (status) {
-                case 'good':
-                    return '<span class="badge badge-success">完好</span>';
-                case 'damaged':
-                    return '<span class="badge badge-warning">损坏</span>';
-                case 'lost':
-                    return '<span class="badge badge-danger">丢失</span>';
-                default:
-                    return '';
-            }
-        };
+// ==================== 领用/归还 ====================
+function initCheckout() {
+    // 填充配件下拉
+    const checkoutSelect = document.getElementById('checkoutPart');
+    checkoutSelect.innerHTML = '<option value="">请选择配件</option>' + 
+        data.parts.map(p => `<option value="${p.id}">${p.name}${p.model ? ' ('+p.model+')' : ''} - 库存${p.stock}</option>`).join('');
+    
+    const returnSelect = document.getElementById('returnPart');
+    returnSelect.innerHTML = '<option value="">请选择配件</option>' + 
+        data.parts.filter(p => p.stock < 100).map(p => `<option value="${p.id}">${p.name}${p.model ? ' ('+p.model+')' : ''}</option>`).join('');
+    
+    // 填充人员下拉
+    const personOptions = data.persons.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    document.getElementById('checkoutPerson').innerHTML = '<option value="">请选择领取人</option>' + personOptions;
+    document.getElementById('returnPerson').innerHTML = '<option value="">请选择归还人</option>' + personOptions;
+    
+    // 重置数量
+    document.getElementById('checkoutQty').textContent = '1';
+    document.getElementById('returnQty').textContent = '1';
+    document.getElementById('checkoutNote').value = '';
+    document.getElementById('returnNote').value = '';
+}
 
-        // 获取库存状态
-        const getStockStatus = (part) => {
-            if (part.availableQuantity === 0) {
-                return { class: 'text-danger', icon: 'fa-exclamation-circle', text: '缺货' };
-            } else if (part.availableQuantity <= part.minStock) {
-                return { class: 'text-warning', icon: 'fa-exclamation-triangle', text: '库存低' };
-            } else {
-                return { class: 'text-success', icon: 'fa-check-circle', text: '充足' };
-            }
-        };
+function updateCheckoutStock() {
+    const id = parseInt(document.getElementById('checkoutPart').value);
+    if (!id) {
+        document.getElementById('checkoutStockInfo').textContent = '';
+        return;
+    }
+    const p = data.parts.find(x => x.id === id);
+    if (p) {
+        const isLow = p.stock <= p.alertStock;
+        document.getElementById('checkoutStockInfo').innerHTML = `当前库存：<strong style="color:${isLow?'var(--red)':'var(--green)'}">${p.stock}</strong> 件`;
+        document.getElementById('checkoutQty').textContent = '1';
+        document.getElementById('checkoutQty').dataset.max = p.stock;
+    }
+}
 
-        // 页面控制器
-        class PageController {
-            constructor() {
-                this.currentPage = 'dashboard';
-                this.init();
-            }
+function updateReturnList() {
+    const id = parseInt(document.getElementById('returnPart').value);
+    document.getElementById('returnQty').textContent = '1';
+    if (!id) return;
+}
 
-            init() {
-                // 初始化数据
-                initData();
-                
-                // 绑定导航事件
-                this.bindNavEvents();
-                
-                // 绑定模态框事件
-                this.bindModalEvents();
-                
-                // 绑定表单事件
-                this.bindFormEvents();
-                
-                // 绑定数量增减按钮事件
-                this.bindQuantityEvents();
-                
-                // 绑定其他交互事件
-                this.bindOtherEvents();
-                
-                // 加载初始页面
-                this.loadPage('dashboard');
-            }
+function changeQty(id, delta) {
+    const el = document.getElementById(id);
+    let val = parseInt(el.textContent);
+    const max = parseInt(el.dataset.max) || 999;
+    val = Math.max(1, Math.min(max, val + delta));
+    el.textContent = val;
+}
 
-            bindNavEvents() {
-                // 底部导航按钮点击事件
-                document.querySelectorAll('.nav-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const page = btn.dataset.page;
-                        this.loadPage(page);
-                        
-                        // 更新活动状态
-                        document.querySelectorAll('.nav-btn').forEach(b => {
-                            b.classList.remove('tab-active');
-                        });
-                        btn.classList.add('tab-active');
-                    });
-                });
-            }
+function doCheckout() {
+    const partId = parseInt(document.getElementById('checkoutPart').value);
+    const personId = parseInt(document.getElementById('checkoutPerson').value);
+    const qty = parseInt(document.getElementById('checkoutQty').textContent);
+    const note = document.getElementById('checkoutNote').value.trim();
+    
+    if (!partId) return alert('请选择配件');
+    if (!personId) return alert('请选择领取人');
+    
+    const p = data.parts.find(x => x.id === partId);
+    if (p.stock < qty) return alert('库存不足！当前库存：' + p.stock);
+    
+    p.stock -= qty;
+    const record = {
+        id: Date.now(),
+        partId,
+        partName: p.name,
+        personId,
+        qty,
+        type: 'out',
+        time: new Date().toISOString(),
+        note
+    };
+    data.records.push(record);
+    save();
+    
+    alert(`✅ 领用成功！\n${p.name} × ${qty}件\n领取人：${getPersonName(personId)}`);
+    initCheckout();
+    switchTab('home');
+}
 
-            bindModalEvents() {
-                // 搜索模态框
-                document.getElementById('searchBtn').addEventListener('click', () => {
-                    document.getElementById('searchModal').classList.remove('hidden');
-                    document.getElementById('searchInput').focus();
-                });
-                
-                document.getElementById('closeSearchBtn').addEventListener('click', () => {
-                    document.getElementById('searchModal').classList.add('hidden');
-                    document.getElementById('searchInput').value = '';
-                    document.getElementById('searchResults').innerHTML = '';
-                });
-                
-                // 设置模态框
-                document.getElementById('settingsBtn').addEventListener('click', () => {
-                    document.getElementById('settingsModal').classList.remove('hidden');
-                });
-                
-                document.getElementById('closeSettingsBtn').addEventListener('click', () => {
-                    document.getElementById('settingsModal').classList.add('hidden');
-                });
-                
-                // 师傅管理模态框
-                document.getElementById('manageMastersBtn').addEventListener('click', () => {
-                    document.getElementById('settingsModal').classList.add('hidden');
-                    this.loadMastersList();
-                    document.getElementById('mastersModal').classList.remove('hidden');
-                });
-                
-                document.getElementById('closeMastersBtn').addEventListener('click', () => {
-                    document.getElementById('mastersModal').classList.add('hidden');
-                });
-                
-                // 编辑师傅模态框
-                document.getElementById('addMasterBtn').addEventListener('click', () => {
-                    document.getElementById('editMasterTitle').textContent = '添加师傅';
-                    document.getElementById('masterId').value = '';
-                    document.getElementById('masterName').value = '';
-                    document.getElementById('masterPhone').value = '';
-                    document.getElementById('editMasterModal').classList.remove('hidden');
-                    document.getElementById('masterName').focus();
-                });
-                
-                document.getElementById('closeEditMasterBtn').addEventListener('click', () => {
-                    document.getElementById('editMasterModal').classList.add('hidden');
-                });
-                
-                document.getElementById('cancelEditMasterBtn').addEventListener('click', () => {
-                    document.getElementById('editMasterModal').classList.add('hidden');
-                });
-                
-                // 分类管理模态框
-                document.getElementById('manageCategoriesBtn').addEventListener('click', () => {
-                    document.getElementById('settingsModal').classList.add('hidden');
-                    this.loadCategoriesList();
-                    document.getElementById('categoriesModal').classList.remove('hidden');
-                });
-                
-                document.getElementById('closeCategoriesBtn').addEventListener('click', () => {
-                    document.getElementById('categoriesModal').classList.add('hidden');
-                });
-                
-                // 编辑配件模态框
-                document.getElementById('closeEditPartBtn').addEventListener('click', () => {
-                    document.getElementById('editPartModal').classList.add('hidden');
-                });
-                
-                document.getElementById('cancelEditPartBtn').addEventListener('click', () => {
-                    document.getElementById('editPartModal').classList.add('hidden');
-                });
-                
-                // 领用配件模态框
-                document.getElementById('closeCheckoutBtn').addEventListener('click', () => {
-                    document.getElementById('checkoutModal').classList.add('hidden');
-                });
-                
-                document.getElementById('cancelCheckoutBtn').addEventListener('click', () => {
-                    document.getElementById('checkoutModal').classList.add('hidden');
-                });
-                
-                // 归还配件模态框
-                document.getElementById('closeReturnBtn').addEventListener('click', () => {
-                    document.getElementById('returnModal').classList.add('hidden');
-                });
-                
-                document.getElementById('cancelReturnBtn').addEventListener('click', () => {
-                    document.getElementById('returnModal').classList.add('hidden');
-                });
-                
-                // 扫码模态框
-                document.getElementById('closeScanBtn').addEventListener('click', () => {
-                    this.stopScan();
-                    document.getElementById('scanModal').classList.add('hidden');
-                });
-            }
+function doReturn() {
+    const partId = parseInt(document.getElementById('returnPart').value);
+    const personId = parseInt(document.getElementById('returnPerson').value);
+    const qty = parseInt(document.getElementById('returnQty').textContent);
+    const note = document.getElementById('returnNote').value.trim();
+    
+    if (!partId) return alert('请选择配件');
+    if (!personId) return alert('请选择归还人');
+    
+    const p = data.parts.find(x => x.id === partId);
+    p.stock += qty;
+    const record = {
+        id: Date.now(),
+        partId,
+        partName: p.name,
+        personId,
+        qty,
+        type: 'ret',
+        time: new Date().toISOString(),
+        note
+    };
+    data.records.push(record);
+    save();
+    
+    alert(`✅ 归还成功！\n${p.name} × ${qty}件\n归还人：${getPersonName(personId)}`);
+    initCheckout();
+    switchTab('home');
+}
 
-            bindFormEvents() {
-                // 编辑师傅表单
-                document.getElementById('editMasterForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.saveMaster();
-                });
-                
-                // 添加分类
-                document.getElementById('addCategoryBtn').addEventListener('click', () => {
-                    const newCategory = document.getElementById('newCategoryInput').value.trim();
-                    if (newCategory) {
-                        this.addCategory(newCategory);
-                        document.getElementById('newCategoryInput').value = '';
-                    }
-                });
-                
-                // 编辑配件表单
-                document.getElementById('editPartForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.savePart();
-                });
-                
-                // 领用配件表单
-                document.getElementById('checkoutForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.saveCheckout();
-                });
-                
-                // 归还配件表单
-                document.getElementById('returnForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.saveReturn();
-                });
-                
-                // 搜索表单
-                document.getElementById('searchInput').addEventListener('input', () => {
-                    const query = document.getElementById('searchInput').value.toLowerCase().trim();
-                    this.searchParts(query);
-                });
-            }
+// ==================== 记录列表 ====================
+function loadRecords() {
+    const type = document.getElementById('filterType').value;
+    const personId = parseInt(document.getElementById('filterPerson').value) || 0;
+    const date = document.getElementById('filterDate').value;
+    
+    // 填充人员筛选
+    const personFilter = document.getElementById('filterPerson');
+    if (!personFilter.querySelector('option[value=""]')) {
+        personFilter.innerHTML = '<option value="">全部人员</option>' + 
+            data.persons.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    }
+    
+    let records = [...data.records].reverse();
+    if (type) records = records.filter(r => r.type === type);
+    if (personId) records = records.filter(r => r.personId === personId);
+    if (date) records = records.filter(r => r.time.startsWith(date));
+    
+    if (records.length === 0) {
+        document.getElementById('recordsList').innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">暂无记录</div></div>';
+        return;
+    }
+    
+    document.getElementById('recordsList').innerHTML = records.map(r => `
+        <div class="record-item ${r.type}">
+            <div class="record-header">
+                <div class="record-title">${r.partName}</div>
+                <span class="record-badge badge-${r.type}">${r.type === 'out' ? '领用' : '归还'}</span>
+            </div>
+            <div class="record-meta">
+                <span>👤 ${getPersonName(r.personId)}</span>
+                <span>📦 ${r.type === 'out' ? '-' : '+'}${r.qty}件</span>
+                <span>⏰ ${formatDate(r.time)}</span>
+            </div>
+            ${r.note ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;">📝 ${r.note}</div>` : ''}
+        </div>
+    `).join('');
+}
 
-            bindQuantityEvents() {
-                // 增加数量按钮
-                document.getElementById('increaseQuantity').addEventListener('click', () => {
-                    const input = document.getElementById('returnQuantityInput');
-                    const currentValue = parseInt(input.value);
-                    const maxValue = parseInt(input.max);
-                    
-                    if (currentValue < maxValue) {
-                        input.value = currentValue + 1;
-                    }
-                });
-                
-                // 减少数量按钮
-                document.getElementById('decreaseQuantity').addEventListener('click', () => {
-                    const input = document.getElementById('returnQuantityInput');
-                    const currentValue = parseInt(input.value);
-                    
-                    if (currentValue > 1) {
-                        input.value = currentValue - 1;
-                    }
-                });
-                
-                // 输入框变化事件
-                document.getElementById('returnQuantityInput').addEventListener('change', () => {
-                    const input = document.getElementById('returnQuantityInput');
-                    let value = parseInt(input.value);
-                    const maxValue = parseInt(input.max);
-                    
-                    if (isNaN(value) || value < 1) {
-                        value = 1;
-                    } else if (value > maxValue) {
-                        value = maxValue;
-                    }
-                    
-                    input.value = value;
-                });
-            }
-            
-            bindOtherEvents() {
-                // 导出数据
-                document.getElementById('exportDataBtn').addEventListener('click', () => {
-                    this.exportData();
-                });
-                
-                // 导入数据
-                document.getElementById('importDataBtn').addEventListener('click', () => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = '.json';
-                    input.onchange = (e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (e) => {
-                                try {
-                                    const data = JSON.parse(e.target.result);
-                                    this.importData(data);
-                                } catch (error) {
-                                    showToast('导入失败：无效的数据格式');
-                                }
-                            };
-                            reader.readAsText(file);
-                        }
-                    };
-                    input.click();
-                });
-                
-                // 重置数据
-                document.getElementById('resetDataBtn').addEventListener('click', () => {
-                    showConfirm(
-                        '重置数据',
-                        '此操作将清除所有数据并重新初始化。确定要继续吗？',
-                        () => {
-                            localStorage.removeItem('warehouseData');
-                            initData();
-                            showToast('数据已重置');
-                            this.loadPage(this.currentPage);
-                        }
-                    );
-                });
-                
-                // 扫描条码按钮
-                document.getElementById('scanBarcodeBtn').addEventListener('click', () => {
-                    document.getElementById('editPartModal').classList.add('hidden');
-                    this.startScan('barcode');
-                });
-                
-                document.getElementById('scanPartBtn').addEventListener('click', () => {
-                    document.getElementById('checkoutModal').classList.add('hidden');
-                    this.startScan('checkout');
-                });
-                
-                // 归还状态单选按钮
-                document.querySelectorAll('input[name="returnCondition"]').forEach(radio => {
-                    radio.addEventListener('change', () => {
-                        document.querySelectorAll('.return-radio').forEach((el, index) => {
-                            const dot = el.querySelector('.return-radio-dot');
-                            if (radio.checked && radio.value === ['good', 'damaged', 'lost'][index]) {
-                                el.classList.add('border-primary');
-                                el.classList.remove('border-gray-300');
-                                dot.classList.remove('hidden');
-                            } else {
-                                el.classList.remove('border-primary');
-                                el.classList.add('border-gray-300');
-                                dot.classList.add('hidden');
-                            }
-                        });
-                    });
-                });
-            }
+// ==================== 设置 ====================
+function showModal(id) {
+    document.getElementById(id).classList.add('active');
+    if (id === 'settingsModal') renderSettings();
+}
 
-            loadPage(page) {
-                this.currentPage = page;
-                const pageContent = document.getElementById('pageContent');
-                
-                switch (page) {
-                    case 'dashboard':
-                        pageContent.innerHTML = this.getDashboardPage();
-                        break;
-                    case 'parts':
-                        pageContent.innerHTML = this.getPartsPage();
-                        this.loadPartsList();
-                        break;
-                    case 'checkout':
-                        pageContent.innerHTML = this.getCheckoutPage();
-                        this.loadCheckoutForm();
-                        break;
-                    case 'return':
-                        pageContent.innerHTML = this.getReturnPage();
-                        this.loadReturnList();
-                        break;
-                    case 'records':
-                        pageContent.innerHTML = this.getRecordsPage();
-                        this.loadRecordsList();
-                        break;
-                    default:
-                        pageContent.innerHTML = '<p class="text-center py-8">页面不存在</p>';
-                }
-            }
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
 
-            getDashboardPage() {
-                const data = getData();
-                const parts = data.parts;
-                const records = data.records;
-                
-                // 计算统计数据
-                const totalParts = parts.length;
-                const lowStockParts = parts.filter(p => p.availableQuantity <= p.minStock).length;
-                const outOfStockParts = parts.filter(p => p.availableQuantity === 0).length;
-                const activeCheckouts = records.filter(r => r.status === 'checkout').length;
-                
-                // 获取最近活动
-                const recentActivities = records
-                    .sort((a, b) => new Date(b.checkoutTime) - new Date(a.checkoutTime))
-                    .slice(0, 5);
-                
-                let recentActivitiesHtml = '';
-                if (recentActivities.length > 0) {
-                    recentActivitiesHtml = recentActivities.map(record => {
-                        const part = parts.find(p => p.id === record.partId);
-                        const master = data.masters.find(m => m.id === record.masterId);
-                        const statusClass = record.status === 'checkout' ? 'text-primary' : 'text-success';
-                        const statusIcon = record.status === 'checkout' ? 'fa-sign-out' : 'fa-sign-in';
-                        const statusText = record.status === 'checkout' ? '领用' : '归还';
-                        
-                        return `
-                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-                                        <i class="fa ${statusIcon} ${statusClass}"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium">${master ? master.name : '未知师傅'} ${statusText} ${part ? part.name : '未知配件'}</p>
-                                        <p class="text-xs text-medium">${formatDateTime(record.checkoutTime)}</p>
-                                    </div>
-                                </div>
-                                <span class="text-sm">${record.quantity} ${part ? part.unit : '个'}</span>
-                            </div>
-                        `;
-                    }).join('');
+function renderSettings() {
+    // 人员列表
+    document.getElementById('personList').innerHTML = data.persons.map(p => `
+        <div class="list-item">
+            <div class="list-item-info">
+                <div class="list-item-name">${p.name}</div>
+                <div class="list-item-meta">${p.role === 'driver' ? '司机' : p.role === 'worker' ? '工人' : '其他'}${p.phone ? ' · ' + p.phone : ''}</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <span class="list-item-action" onclick="editPerson(${p.id})">✏️</span>
+                <span class="list-item-action" style="color:var(--red)" onclick="deletePerson(${p.id})">🗑️</span>
+            </div>
+        </div>
+    `).join('');
+    
+    // 分类列表
+    document.getElementById('categoryList').innerHTML = data.categories.map(c => `
+        <div class="list-item">
+            <div class="list-item-info">
+                <div class="list-item-name">${getCategoryIcon(c.id)} ${c.name}</div>
+            </div>
+            <span class="list-item-action" style="color:var(--red)" onclick="deleteCategory(${c.id})">🗑️</span>
+        </div>
+    `).join('');
+    
+    // 配件管理
+    document.getElementById('allPartsManage').innerHTML = data.parts.map(p => `
+        <div class="list-item">
+            <div class="list-item-info">
+                <div class="list-item-name">${p.name}${p.model ? ' ('+p.model+')' : ''}</div>
+                <div class="list-item-meta">${getCategoryName(p.categoryId)} · 库存 ${p.stock}</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <span class="list-item-action" onclick="editPart(${p.id})">✏️</span>
+                <span class="list-item-action" style="color:var(--red)" onclick="deletePart(${p.id})">🗑️</span>
+            </div>
+        </div>
+    `).join('');
+    
+    // 填充分类下拉
+    document.getElementById('partCategoryInput').innerHTML = data.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function showAddPerson() {
+    document.getElementById('editPersonId').value = '';
+    document.getElementById('personNameInput').value = '';
+    document.getElementById('personPhoneInput').value = '';
+    document.getElementById('personRoleInput').value = 'driver';
+    showModal('addPersonModal');
+}
+
+function editPerson(id) {
+    const p = data.persons.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('editPersonId').value = id;
+    document.getElementById('personNameInput').value = p.name;
+    document.getElementById('personPhoneInput').value = p.phone || '';
+    document.getElementById('personRoleInput').value = p.role || 'driver';
+    showModal('addPersonModal');
+}
+
+function savePerson() {
+    const name = document.getElementById('personNameInput').value.trim();
+    const phone = document.getElementById('personPhoneInput').value.trim();
+    const role = document.getElementById('personRoleInput').value;
+    const editId = document.getElementById('editPersonId').value;
+    
+    if (!name) return alert('请输入姓名');
+    
+    if (editId) {
+        const p = data.persons.find(x => x.id === parseInt(editId));
+        p.name = name;
+        p.phone = phone;
+        p.role = role;
+    } else {
+        data.persons.push({
+            id: data.nextPersonId++,
+            name, phone, role
+        });
+    }
+    save();
+    closeModal('addPersonModal');
+    renderSettings();
+}
+
+function deletePerson(id) {
+    if (!confirm('确定删除该人员？')) return;
+    data.persons = data.persons.filter(x => x.id !== id);
+    save();
+    renderSettings();
+}
+
+function addCategory() {
+    const name = document.getElementById('newCategoryInput').value.trim();
+    if (!name) return;
+    data.categories.push({ id: data.nextCategoryId++, name });
+    save();
+    document.getElementById('newCategoryInput').value = '';
+    renderSettings();
+}
+
+function deleteCategory(id) {
+    const hasParts = data.parts.some(p => p.categoryId === id);
+    if (hasParts) return alert('该分类下有配件，无法删除');
+    if (!confirm('确定删除该分类？')) return;
+    data.categories = data.categories.filter(x => x.id !== id);
+    save();
+    renderSettings();
+}
+
+function showAddPart() {
+    document.getElementById('editPartId').value = '';
+    document.getElementById('addPartTitle').textContent = '➕ 添加配件';
+    document.getElementById('partNameInput').value = '';
+    document.getElementById('partModelInput').value = '';
+    document.getElementById('partStockInput').value = '0';
+    document.getElementById('partAlertInput').value = '5';
+    document.getElementById('partNoteInput').value = '';
+    document.getElementById('partCategoryInput').value = data.categories[0]?.id || 1;
+    showModal('addPartModal');
+}
+
+function editPart(id) {
+    const p = data.parts.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('editPartId').value = id;
+    document.getElementById('addPartTitle').textContent = '✏️ 编辑配件';
+    document.getElementById('partNameInput').value = p.name;
+    document.getElementById('partModelInput').value = p.model || '';
+    document.getElementById('partStockInput').value = p.stock;
+    document.getElementById('partAlertInput').value = p.alertStock;
+    document.getElementById('partNoteInput').value = p.note || '';
+    document.getElementById('partCategoryInput').value = p.categoryId;
+    showModal('addPartModal');
+}
+
+function savePart() {
+    const name = document.getElementById('partNameInput').value.trim();
+    const model = document.getElementById('partModelInput').value.trim();
+    const stock = parseInt(document.getElementById('partStockInput').value) || 0;
+    const alertStock = parseInt(document.getElementById('partAlertInput').value) || 5;
+    const categoryId = parseInt(document.getElementById('partCategoryInput').value) || 1;
+    const note = document.getElementById('partNoteInput').value.trim();
+    const editId = document.getElementById('editPartId').value;
+    
+    if (!name) return alert('请输入配件名称');
+    
+    if (editId) {
+        const p = data.parts.find(x => x.id === parseInt(editId));
+        p.name = name;
+        p.model = model;
+        p.stock = stock;
+        p.alertStock = alertStock;
+        p.categoryId = categoryId;
+        p.note = note;
+    } else {
+        data.parts.push({
+            id: data.nextPartId++,
+            name, model, stock, alertStock, categoryId, note, history: []
+        });
+    }
+    save();
+    closeModal('addPartModal');
+    renderSettings();
+}
+
+function deletePart(id) {
+    if (!confirm('确定删除该配件？')) return;
+    data.parts = data.parts.filter(x => x.id !== id);
+    save();
+    renderSettings();
+}
+
+// ==================== 数据导入导出 ====================
+function exportData() {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `仓库数据_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('数据已导出');
+}
+
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            try {
+                const imported = JSON.parse(ev.target.result);
+                if (imported.parts && imported.persons) {
+                    data = imported;
+                    save();
+                    alert('数据导入成功！');
+                    closeModal('settingsModal');
+                    renderHome();
                 } else {
-                    recentActivitiesHtml = `
-                        <div class="py-8 text-center text-medium">
-                            <i class="fa fa-history text-3xl mb-2"></i>
-                            <p>暂无活动记录</p>
-                        </div>
-                    `;
+                    alert('文件格式不正确');
                 }
-                
-                return `
-                    <div class="space-y-4">
-                        <!-- 快速操作按钮 -->
-                        <div class="grid grid-cols-4 gap-3">
-                            <button onclick="pageController.loadPage('checkout')" class="flex flex-col items-center justify-center bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                                    <i class="fa fa-sign-out text-primary text-xl"></i>
-                                </div>
-                                <span class="text-xs">领用</span>
-                            </button>
-                            <button onclick="pageController.loadPage('return')" class="flex flex-col items-center justify-center bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
-                                    <i class="fa fa-sign-in text-success text-xl"></i>
-                                </div>
-                                <span class="text-xs">归还</span>
-                            </button>
-                            <button onclick="pageController.loadPage('parts')" class="flex flex-col items-center justify-center bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2">
-                                    <i class="fa fa-cubes text-purple-600 text-xl"></i>
-                                </div>
-                                <span class="text-xs">配件</span>
-                            </button>
-                            <button onclick="pageController.loadPage('records')" class="flex flex-col items-center justify-center bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                                <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-2">
-                                    <i class="fa fa-list-alt text-amber-600 text-xl"></i>
-                                </div>
-                                <span class="text-xs">记录</span>
-                            </button>
-                        </div>
-                        
-                        <!-- 统计卡片 -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-white rounded-xl p-4 shadow-sm">
-                                <p class="text-medium text-sm mb-1">配件总数</p>
-                                <div class="flex items-end justify-between">
-                                    <p class="text-2xl font-bold">${totalParts}</p>
-                                    <span class="text-xs text-success">全部</span>
-                                </div>
-                            </div>
-                            <div class="bg-white rounded-xl p-4 shadow-sm">
-                                <p class="text-medium text-sm mb-1">库存警告</p>
-                                <div class="flex items-end justify-between">
-                                    <p class="text-2xl font-bold">${lowStockParts}</p>
-                                    <span class="text-xs text-warning">需补充</span>
-                                </div>
-                            </div>
-                            <div class="bg-white rounded-xl p-4 shadow-sm">
-                                <p class="text-medium text-sm mb-1">缺货配件</p>
-                                <div class="flex items-end justify-between">
-                                    <p class="text-2xl font-bold">${outOfStockParts}</p>
-                                    <span class="text-xs text-danger">紧急</span>
-                                </div>
-                            </div>
-                            <div class="bg-white rounded-xl p-4 shadow-sm">
-                                <p class="text-medium text-sm mb-1">在外配件</p>
-                                <div class="flex items-end justify-between">
-                                    <p class="text-2xl font-bold">${activeCheckouts}</p>
-                                    <span class="text-xs text-primary">未归还</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 最近活动 -->
-                        <div class="bg-white rounded-xl p-4 shadow-sm">
-                            <div class="flex justify-between items-center mb-3">
-                                <h2 class="font-bold">最近活动</h2>
-                                <button onclick="pageController.loadPage('records')" class="text-primary text-sm">查看全部</button>
-                            </div>
-                            <div>${recentActivitiesHtml}</div>
-                        </div>
-                    </div>
-                `;
+            } catch(e) {
+                alert('导入失败：' + e.message);
             }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
 
-            getPartsPage() {
-                return `
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold">配件管理</h2>
-                        <button id="addPartBtn" class="btn-primary flex items-center">
-                            <i class="fa fa-plus mr-2"></i> 添加配件
-                        </button>
-                    </div>
-                    
-                    <!-- 筛选和搜索 -->
-                    <div class="flex mb-4 space-x-2">
-                        <select id="categoryFilter" class="input-field flex-1">
-                            <option value="">全部分类</option>
-                            <!-- 分类选项将在这里动态添加 -->
-                        </select>
-                        <select id="stockFilter" class="input-field flex-1">
-                            <option value="">全部库存</option>
-                            <option value="available">有库存</option>
-                            <option value="low">库存低</option>
-                            <option value="out">缺货</option>
-                        </select>
-                    </div>
-                    
-                    <!-- 配件列表 -->
-                    <div id="partsList" class="space-y-3">
-                        <!-- 配件列表将在这里动态添加 -->
-                    </div>
-                `;
-            }
+// ==================== 启动 ====================
+document.addEventListener('DOMContentLoaded', () => {
+    // 填充filterPerson
+    loadRecords();
+    renderHome();
+    
+    // 点击空白关闭弹窗
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        m.addEventListener('click', e => {
+            if (e.target === m) m.classList.remove('active');
+        });
+    });
+});
 
-            loadPartsList() {
-                const data = getData();
-                const parts = data.parts;
-                const categories = data.categories;
-                
-                // 更新分类筛选
-                const categoryFilter = document.getElementById('categoryFilter');
-                categoryFilter.innerHTML = '<option value="">全部分类</option>';
-                categories.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    categoryFilter.appendChild(option);
-                });
-                
-                // 更新分类选择器（在添加/编辑配件模态框中）
-                const partCategory = document.getElementById('partCategory');
-                partCategory.innerHTML = '';
-                categories.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    partCategory.appendChild(option);
-                });
-                
-                // 绑定筛选事件
-                categoryFilter.addEventListener('change', () => {
-                    this.filterParts();
-                });
-                
-                document.getElementById('stockFilter').addEventListener('change', () => {
-                    this.filterParts();
-                });
-                
-                // 绑定添加配件按钮
-                document.getElementById('addPartBtn').addEventListener('click', () => {
-                    document.getElementById('editPartTitle').textContent = '添加配件';
-                    document.getElementById('partId').value = '';
-                    document.getElementById('partName').value = '';
-                    document.getElementById('partModel').value = '';
-                    document.getElementById('partCategory').value = categories.length > 0 ? categories[0].id : '';
-                    document.getElementById('partTotalQuantity').value = '';
-                    document.getElementById('partAvailableQuantity') = '';
-                    document.getElementById('partUnit').value = '个';
-                    document.getElementById('partMinStock').value = '1';
-                    document.getElementById('partBarcode').value = '';
-                    document.getElementById('partNotes').value = '';
-                    document.getElementById('editPartModal').classList.remove('hidden');
-                    document.getElementById('partName').focus();
-                });
-                
-                // 初始加载配件列表
-                this.filterParts();
-            }
-
-            filterParts() {
-                const data = getData();
-                const parts = data.parts;
-                const categoryFilter = document.getElementById('categoryFilter').value;
-                const stockFilter = document.getElementById('stockFilter').value;
-                
-                let filteredParts = parts;
-                
-                // 按分类筛选
-                if (categoryFilter) {
-                    filteredParts = filteredParts.filter(part => part.category === categoryFilter);
-                }
-                
-                // 按库存状态筛选
-                if (stockFilter === 'available') {
-                    filteredParts = filteredParts.filter(part => part.availableQuantity > 0);
-                } else if (stockFilter === 'low') {
-                    filteredParts = filteredParts.filter(part => part.availableQuantity <= part.minStock && part.availableQuantity > 0);
-                } else if (stockFilter === 'out') {
-                    filteredParts = filteredParts.filter(part => part.availableQuantity === 0);
-                }
-                
-                // 渲染配件列表
-                const partsList = document.getElementById('partsList');
-                partsList.innerHTML = '';
-                
-                if (filteredParts.length === 0) {
-                    partsList.innerHTML = `
-                        <div class="py-12 text-center text-medium">
-                            <i class="fa fa-cubes text-4xl mb-3"></i>
-                            <p>没有找到符合条件的配件</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                filteredParts.forEach(part => {
-                    const category = data.categories.find(c => c.id === part.category);
-                    const stockStatus = getStockStatus(part);
-                    
-                    const partElement = document.createElement('div');
-                    partElement.className = 'card';
-                    partElement.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center">
-                                    <h3 class="font-bold">${part.name}</h3>
-                                    ${part.availableQuantity === 0 ? '<span class="badge badge-danger ml-2">缺货</span>' : ''}
-                                    ${part.availableQuantity <= part.minStock && part.availableQuantity > 0 ? '<span class="badge badge-warning ml-2">库存低</span>' : ''}
-                                </div>
-                                <p class="text-sm text-medium">${part.model || '无型号'}</p>
-                                <p class="text-xs text-medium mt-1">${category ? category.name : '未分类'}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-lg font-bold">${part.availableQuantity}/${part.totalQuantity} ${part.unit}</p>
-                                <div class="flex items-center justify-end mt-1 text-xs">
-                                    <i class="fa ${stockStatus.icon} ${stockStatus.class} mr-1"></i>
-                                    <span>${stockStatus.text}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between mt-4 pt-3 border-t border-gray-100">
-                            <button onclick="pageController.editPart('${part.id}')" class="text-primary text-sm flex items-center">
-                                <i class="fa fa-pencil mr-1"></i> 编辑
-                            </button>
-                            <button onclick="pageController.deletePart('${part.id}')" class="text-danger text-sm flex items-center">
-                                <i class="fa fa-trash mr-1"></i> 删除
-                            </button>
-                        </div>
-                    `;
-                    partsList.appendChild(partElement);
-                });
-            }
-
-            editPart(partId) {
-                const data = getData();
-                const part = data.parts.find(p => p.id === partId);
-                
-                if (part) {
-                    document.getElementById('editPartTitle').textContent = '编辑配件';
-                    document.getElementById('partId').value = part.id;
-                    document.getElementById('partName').value = part.name;
-                    document.getElementById('partModel').value = part.model || '';
-                    document.getElementById('partCategory').value = part.category || '';
-                    document.getElementById('partTotalQuantity').value = part.totalQuantity;
-                    document.getElementById('partUnit').value = part.unit || '个';
-                    document.getElementById('partMinStock').value = part.minStock || 1;
-                    document.getElementById('partBarcode').value = part.barcode || '';
-                    document.getElementById('partNotes').value = part.notes || '';
-                    document.getElementById('editPartModal').classList.remove('hidden');
-                }
-            }
-
-            deletePart(partId) {
-                const data = getData();
-                const part = data.parts.find(p => p.id === partId);
-                
-                if (part) {
-                    // 检查是否有未归还的记录
-                    const activeRecords = data.records.filter(r => r.partId === partId && r.status === 'checkout');
-                    
-                    if (activeRecords.length > 0) {
-                        showToast('无法删除：该配件有未归还的领用记录');
-                        return;
-                    }
-                    
-                    showConfirm(
-                        '删除配件',
-                        `确定要删除配件"${part.name}"吗？此操作无法撤销。`,
-                        () => {
-                            data.parts = data.parts.filter(p => p.id !== partId);
-                            saveData(data);
-                            this.filterParts();
-                            showToast('配件已删除');
-                        }
-                    );
-                }
-            }
-
-            savePart() {
-                const partId = document.getElementById('partId').value;
-                const name = document.getElementById('partName').value.trim();
-                const model = document.getElementById('partModel').value.trim();
-                const category = document.getElementById('partCategory').value;
-                const totalQuantity = parseInt(document.getElementById('partTotalQuantity').value);
-                const unit = document.getElementById('partUnit').value.trim() || '个';
-                const minStock = parseInt(document.getElementById('partMinStock').value) || 1;
-                const barcode = document.getElementById('partBarcode').value.trim();
-                const notes = document.getElementById('partNotes').value.trim();
-                
-                if (!name) {
-                    showToast('请输入配件名称');
-                    return;
-                }
-                
-                if (isNaN(totalQuantity) || totalQuantity < 0) {
-                    showToast('请输入有效的数量');
-                    return;
-                }
-                
-                const data = getData();
-                
-                if (partId) {
-                    // 编辑现有配件
-                    const partIndex = data.parts.findIndex(p => p.id === partId);
-                    
-                    if (partIndex !== -1) {
-                        const oldPart = data.parts[partIndex];
-                        const availableDiff = totalQuantity - oldPart.totalQuantity;
-                        
-                        data.parts[partIndex] = {
-                            ...oldPart,
-                            name,
-                            model,
-                            category,
-                            totalQuantity,
-                            availableQuantity: oldPart.availableQuantity + availableDiff,
-                            unit,
-                            minStock,
-                            barcode,
-                            notes
-                        };
-                        
-                        saveData(data);
-                        document.getElementById('editPartModal').classList.add('hidden');
-                        this.filterParts();
-                        showToast('配件已更新');
-                    }
-                } else {
-                    // 添加新配件
-                    const newPart = {
-                        id: generateId('p'),
-                        name,
-                        model,
-                        category,
-                        totalQuantity,
-                        availableQuantity: totalQuantity,
-                        unit,
-                        minStock,
-                        barcode,
-                        image: '',
-                        notes
-                    };
-                    
-                    data.parts.push(newPart);
-                    saveData(data);
-                    document.getElementById('editPartModal').classList.add('hidden');
-                    this.filterParts();
-                    showToast('配件已添加');
-                }
-            }
-
-            getCheckoutPage() {
-                return `
-                    <div class="mb-4">
-                        <h2 class="text-xl font-bold mb-2">领用配件</h2>
-                        <p class="text-medium">选择师傅和配件进行领用登记</p>
-                    </div>
-                    
-                    <div class="card">
-                        <form id="quickCheckoutForm" class="space-y-4">
-                            <div>
-                                <label for="quickCheckoutMaster" class="block text-sm font-medium mb-1">选择师傅 <span class="text-danger">*</span></label>
-                                <select id="quickCheckoutMaster" class="input-field" required>
-                                    <!-- 师傅选项将在这里动态添加 -->
-                                </select>
-                            </div>
-                            <div>
-                                <label for="quickCheckoutPart" class="block text-sm font-medium mb-1">选择配件 <span class="text-danger">*</span></label>
-                                <div class="flex">
-                                    <select id="quickCheckoutPart" class="input-field flex-1 mr-2" required>
-                                        <!-- 配件选项将在这里动态添加 -->
-                                    </select>
-                                    <button type="button" id="quickScanPartBtn" class="btn-secondary whitespace-nowrap">
-                                        <i class="fa fa-qrcode mr-1"></i> 扫描
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="quickCheckoutQuantity" class="block text-sm font-medium mb-1">领用数量 <span class="text-danger">*</span></label>
-                                <input type="number" id="quickCheckoutQuantity" class="input-field" min="1" value="1" required>
-                            </div>
-                            <div>
-                                <label for="quickCheckoutPurpose" class="block text-sm font-medium mb-1">用途/客户信息</label>
-                                <input type="text" id="quickCheckoutPurpose" class="input-field" placeholder="例如：客户名称或维修项目">
-                            </div>
-                            <button type="submit" class="btn-primary w-full">确认领用</button>
-                        </form>
-                    </div>
-                    
-                    <!-- 最近领用记录 -->
-                    <div class="mt-6">
-                        <h3 class="font-bold mb-3">最近领用</h3>
-                        <div id="recentCheckouts" class="space-y-3">
-                            <!-- 最近领用记录将在这里动态添加 -->
-                        </div>
-                    </div>
-                `;
-            }
-
-            loadCheckoutForm() {
-                const data = getData();
-                
-                // 更新师傅选择器
-                const masterSelect = document.getElementById('quickCheckoutMaster');
-                masterSelect.innerHTML = '';
-                
-                if (data.masters.length === 0) {
-                    masterSelect.innerHTML = '<option value="" disabled>请先添加师傅</option>';
-                } else {
-                    data.masters.forEach(master => {
-                        const option = document.createElement('option');
-                        option.value = master.id;
-                        option.textContent = master.name;
-                        masterSelect.appendChild(option);
-                    });
-                }
-                
-                // 更新配件选择器
-                this.updatePartSelect('quickCheckoutPart', data);
-                
-                // 绑定快速扫描按钮
-                document.getElementById('quickScanPartBtn').addEventListener('click', () => {
-                    this.startScan('quickCheckout');
-                });
-                
-                // 绑定快速领用表单
-                document.getElementById('quickCheckoutForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.processCheckout(
-                        document.getElementById('quickCheckoutMaster').value,
-                        document.getElementById('quickCheckoutPart').value,
-                        parseInt(document.getElementById('quickCheckoutQuantity').value),
-                        document.getElementById('quickCheckoutPurpose').value.trim()
-                    );
-                });
-                
-                // 加载最近领用记录
-                this.loadRecentCheckouts();
-            }
-
-            loadCheckoutForm() {
-                const data = getData();
-                
-                // 更新师傅选择器
-                const masterSelect = document.getElementById('quickCheckoutMaster');
-                masterSelect.innerHTML = '';
-                
-                if (data.masters.length === 0) {
-                    masterSelect.innerHTML = '<option value="" disabled>请先添加师傅</option>';
-                } else {
-                    data.masters.forEach(master => {
-                        const option = document.createElement('option');
-                        option.value = master.id;
-                        option.textContent = master.name;
-                        masterSelect.appendChild(option);
-                    });
-                }
-                
-                // 更新配件选择器
-                this.updatePartSelect('quickCheckoutPart', data);
-                
-                // 绑定快速扫描按钮
-                document.getElementById('quickScanPartBtn').addEventListener('click', () => {
-                    this.startScan('quickCheckout');
-                });
-                
-                // 绑定快速领用表单
-                document.getElementById('quickCheckoutForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.processCheckout(
-                        document.getElementById('quickCheckoutMaster').value,
-                        document.getElementById('quickCheckoutPart').value,
-                        parseInt(document.getElementById('quickCheckoutQuantity').value),
-                        document.getElementById('quickCheckoutPurpose').value.trim()
-                    );
-                });
-                
-                // 加载最近领用记录
-                this.loadRecentCheckouts();
-            }
-
-            updatePartSelect(selectId, data) {
-                const partSelect = document.getElementById(selectId);
-                partSelect.innerHTML = '';
-                
-                const availableParts = data.parts.filter(p => p.availableQuantity > 0);
-                
-                if (availableParts.length === 0) {
-                    partSelect.innerHTML = '<option value="" disabled>暂无可用配件</option>';
-                } else {
-                    availableParts.forEach(part => {
-                        const option = document.createElement('option');
-                        option.value = part.id;
-                        option.textContent = `${part.name} (${part.availableQuantity} ${part.unit})`;
-                        partSelect.appendChild(option);
-                    });
-                }
-            }
-
-            loadRecentCheckouts() {
-                const data = getData();
-                const recentCheckouts = data.records
-                    .filter(r => r.status === 'checkout')
-                    .sort((a, b) => new Date(b.checkoutTime) - new Date(a.checkoutTime))
-                    .slice(0, 5);
-                
-                const recentCheckoutsContainer = document.getElementById('recentCheckouts');
-                recentCheckoutsContainer.innerHTML = '';
-                
-                if (recentCheckouts.length === 0) {
-                    recentCheckoutsContainer.innerHTML = `
-                        <div class="py-8 text-center text-medium">
-                            <i class="fa fa-history text-3xl mb-2"></i>
-                            <p>暂无领用记录</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                recentCheckouts.forEach(record => {
-                    const part = data.parts.find(p => p.id === record.partId);
-                    const master = data.masters.find(m => m.id === record.masterId);
-                    
-                    if (part && master) {
-                        const checkoutElement = document.createElement('div');
-                        checkoutElement.className = 'card';
-                        checkoutElement.innerHTML = `
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="font-bold">${part.name}</h3>
-                                    <p class="text-sm text-medium">${part.model || '无型号'}</p>
-                                </div>
-                                <span class="text-lg font-bold">${record.quantity} ${part.unit}</span>
-                            </div>
-                            <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between text-sm">
-                                <div>
-                                    <p><span class="text-medium">领用师傅：</span>${master.name}</p>
-                                    <p><span class="text-medium">领用时间：</span>${formatDateTime(record.checkoutTime)}</p>
-                                </div>
-                                <button onclick="pageController.returnPart('${record.id}')" class="btn-success text-xs py-1">
-                                    归还
-                                </button>
-                            </div>
-                        `;
-                        recentCheckoutsContainer.appendChild(checkoutElement);
-                    }
-                });
-            }
-
-            processCheckout(masterId, partId, quantity, purpose) {
-                if (!masterId) {
-                    showToast('请选择师傅');
-                    return;
-                }
-                
-                if (!partId) {
-                    showToast('请选择配件');
-                    return;
-                }
-                
-                if (isNaN(quantity) || quantity < 1) {
-                    showToast('请输入有效的数量');
-                    return;
-                }
-                
-                const data = getData();
-                const part = data.parts.find(p => p.id === partId);
-                
-                if (!part) {
-                    showToast('配件不存在');
-                    return;
-                }
-                
-                if (part.availableQuantity < quantity) {
-                    showToast(`库存不足：当前仅有 ${part.availableQuantity} ${part.unit}`);
-                    return;
-                }
-                
-                // 创建领用记录
-                const newRecord = {
-                    id: generateId('r'),
-                    partId,
-                    masterId,
-                    quantity,
-                    purpose: purpose || '未指定',
-                    checkoutTime: new Date().toISOString(),
-                    returnTime: null,
-                    status: 'checkout',
-                    condition: null
-                };
-                
-                // 更新配件库存
-                part.availableQuantity -= quantity;
-                
-                // 保存数据
-                data.records.push(newRecord);
-                saveData(data);
-                
-                // 重置表单
-                document.getElementById('quickCheckoutQuantity').value = '1';
-                document.getElementById('quickCheckoutPurpose').value = '';
-                
-                // 更新页面
-                this.updatePartSelect('quickCheckoutPart', data);
-                this.loadRecentCheckouts();
-                
-                showToast('领用成功');
-            }
-
-            getReturnPage() {
-                return `
-                    <div class="mb-4">
-                        <h2 class="text-xl font-bold mb-2">归还配件</h2>
-                        <p class="text-medium">查看和处理待归还的配件</p>
-                    </div>
-                    
-                    <div id="returnList" class="space-y-3">
-                        <!-- 归还列表将在这里动态添加 -->
-                    </div>
-                `;
-            }
-
-            loadReturnList() {
-                const data = getData();
-                const activeRecords = data.records.filter(r => r.status === 'checkout');
-                
-                const returnList = document.getElementById('returnList');
-                returnList.innerHTML = '';
-                
-                if (activeRecords.length === 0) {
-                    returnList.innerHTML = `
-                        <div class="py-12 text-center text-medium">
-                            <i class="fa fa-check-circle text-4xl mb-3"></i>
-                            <p>暂无待归还的配件</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // 按师傅分组
-                const recordsByMaster = {};
-                activeRecords.forEach(record => {
-                    if (!recordsByMaster[record.masterId]) {
-                        recordsByMaster[record.masterId] = [];
-                    }
-                    recordsByMaster[record.masterId].push(record);
-                });
-                
-                // 渲染每个师傅的记录
-                Object.keys(recordsByMaster).forEach(masterId => {
-                    const master = data.masters.find(m => m.id === masterId);
-                    const masterRecords = recordsByMaster[masterId];
-                    
-                    if (master) {
-                        const masterSection = document.createElement('div');
-                        masterSection.className = 'card';
-                        
-                        let recordsHtml = '';
-                        masterRecords.forEach(record => {
-                            const part = data.parts.find(p => p.id === record.partId);
-                            
-                            if (part) {
-                                recordsHtml += `
-                                    <div class="flex justify-between items-center py-3 border-b border-gray-100">
-                                        <div>
-                                            <p class="font-medium">${part.name}</p>
-                                            <p class="text-xs text-medium">${formatDateTime(record.checkoutTime)}</p>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="mr-3">${record.quantity} ${part.unit}</span>
-                                            <button onclick="pageController.returnPart('${record.id}')" class="btn-primary text-xs py-1 px-3">
-                                                归还
-                                            </button>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                        });
-                        
-                        masterSection.innerHTML = `
-                            <h3 class="font-bold mb-3">${master.name}</h3>
-                            <div>${recordsHtml}</div>
-                        `;
-                        
-                        returnList.appendChild(masterSection);
-                    }
-                });
-            }
-
-            returnPart(recordId) {
-                const data = getData();
-                const record = data.records.find(r => r.id === recordId);
-                
-                if (record) {
-                    const part = data.parts.find(p => p.id === record.partId);
-                    const master = data.masters.find(m => m.id === record.masterId);
-                    
-                    if (part && master) {
-                        document.getElementById('recordId').value = record.id;
-                        document.getElementById('originalQuantity').value = record.quantity;
-                        document.getElementById('returnPartName').textContent = part.name;
-                        document.getElementById('returnPartModel').textContent = part.model || '无型号';
-                        document.getElementById('returnQuantity').textContent = `${record.quantity} ${part.unit}`;
-                        document.getElementById('returnQuantityInput').value = '1';
-                        document.getElementById('returnQuantityInput').max = record.quantity;
-                        document.getElementById('returnMasterName').textContent = master.name;
-                        document.getElementById('returnCheckoutTime').textContent = formatDateTime(record.checkoutTime);
-                        document.getElementById('returnPurpose').textContent = record.purpose;
-                        document.getElementById('returnNotes').value = '';
-                        
-                        // 重置单选按钮
-                        document.querySelectorAll('input[name="returnCondition"]').forEach((radio, index) => {
-                            const dot = radio.parentElement.querySelector('.return-radio-dot');
-                            const circle = radio.parentElement.querySelector('.return-radio');
-                            
-                            if (index === 0) {
-                                radio.checked = true;
-                                dot.classList.remove('hidden');
-                                circle.classList.add('border-primary');
-                                circle.classList.remove('border-gray-300');
-                            } else {
-                                radio.checked = false;
-                                dot.classList.add('hidden');
-                                circle.classList.remove('border-primary');
-                                circle.classList.add('border-gray-300');
-                            }
-                        });
-                        
-                        document.getElementById('returnModal').classList.remove('hidden');
-                    }
-                }
-            }
-
-            saveReturn() {
-                const recordId = document.getElementById('recordId').value;
-                const returnQuantity = parseInt(document.getElementById('returnQuantityInput').value);
-                const condition = document.querySelector('input[name="returnCondition"]:checked').value;
-                const notes = document.getElementById('returnNotes').value.trim();
-                
-                const data = getData();
-                const recordIndex = data.records.findIndex(r => r.id === recordId);
-                
-                if (recordIndex !== -1) {
-                    const record = data.records[recordIndex];
-                    const part = data.parts.find(p => p.id === record.partId);
-                    
-                    if (part) {
-                        // 验证归还数量
-                        if (returnQuantity > record.quantity) {
-                            showToast('归还数量不能大于领用数量');
-                            return;
-                        }
-                        
-                        if (returnQuantity === record.quantity) {
-                            // 全部归还，更新原记录
-                            data.records[recordIndex] = {
-                                ...record,
-                                returnTime: new Date().toISOString(),
-                                status: 'returned',
-                                condition,
-                                notes
-                            };
-                        } else {
-                            // 部分归还，创建新的归还记录
-                            const returnRecord = {
-                                id: generateId('r'),
-                                partId: record.partId,
-                                masterId: record.masterId,
-                                quantity: returnQuantity,
-                                purpose: record.purpose,
-                                checkoutTime: record.checkoutTime,
-                                returnTime: new Date().toISOString(),
-                                status: 'returned',
-                                condition,
-                                notes: notes || record.notes
-                            };
-                            
-                            // 更新原记录的数量
-                            data.records[recordIndex] = {
-                                ...record,
-                                quantity: record.quantity - returnQuantity
-                            };
-                            
-                            // 添加归还记录
-                            data.records.push(returnRecord);
-                        }
-                        
-                        // 更新库存
-                        if (condition === 'good') {
-                            part.availableQuantity += returnQuantity;
-                        } else if (condition === 'damaged') {
-                            // 损坏的配件不返回库存
-                            part.totalQuantity -= returnQuantity;
-                        } else if (condition === 'lost') {
-                            // 丢失的配件不返回库存
-                            part.totalQuantity -= returnQuantity;
-                            part.availableQuantity -= returnQuantity;
-                        }
-                        
-                        saveData(data);
-                        document.getElementById('returnModal').classList.add('hidden');
-                        
-                        // 更新页面
-                        if (this.currentPage === 'return') {
-                            this.loadReturnList();
-                        } else if (this.currentPage === 'checkout') {
-                            this.loadRecentCheckouts();
-                        } else if (this.currentPage === 'dashboard') {
-                            this.loadPage('dashboard');
-                        }
-                        
-                        showToast(`成功归还 ${returnQuantity} ${part.unit}`);
-                    }
-                }
-            }
-
-            getRecordsPage() {
-                return `
-                    <div class="mb-4">
-                        <h2 class="text-xl font-bold mb-2">领用记录</h2>
-                        <p class="text-medium">查看所有配件领用和归还记录</p>
-                    </div>
-                    
-                    <!-- 筛选器 -->
-                    <div class="flex mb-4 space-x-2">
-                        <select id="recordMasterFilter" class="input-field flex-1">
-                            <option value="">全部师傅</option>
-                            <!-- 师傅选项将在这里动态添加 -->
-                        </select>
-                        <select id="recordStatusFilter" class="input-field flex-1">
-                            <option value="">全部状态</option>
-                            <option value="checkout">未归还</option>
-                            <option value="returned">已归还</option>
-                        </select>
-                    </div>
-                    
-                    <!-- 记录列表 -->
-                    <div id="recordsList" class="space-y-3">
-                        <!-- 记录列表将在这里动态添加 -->
-                    </div>
-                `;
-            }
-
-            loadRecordsList() {
-                const data = getData();
-                
-                // 更新师傅筛选器
-                const masterFilter = document.getElementById('recordMasterFilter');
-                masterFilter.innerHTML = '<option value="">全部师傅</option>';
-                data.masters.forEach(master => {
-                    const option = document.createElement('option');
-                    option.value = master.id;
-                    option.textContent = master.name;
-                    masterFilter.appendChild(option);
-                });
-                
-                // 绑定筛选事件
-                masterFilter.addEventListener('change', () => {
-                    this.filterRecords();
-                });
-                
-                document.getElementById('recordStatusFilter').addEventListener('change', () => {
-                    this.filterRecords();
-                });
-                
-                // 初始加载记录列表
-                this.filterRecords();
-            }
-
-            filterRecords() {
-                const data = getData();
-                const masterFilter = document.getElementById('recordMasterFilter').value;
-                const statusFilter = document.getElementById('recordStatusFilter').value;
-                
-                let filteredRecords = data.records;
-                
-                // 按师傅筛选
-                if (masterFilter) {
-                    filteredRecords = filteredRecords.filter(r => r.masterId === masterFilter);
-                }
-                
-                // 按状态筛选
-                if (statusFilter) {
-                    filteredRecords = filteredRecords.filter(r => r.status === statusFilter);
-                }
-                
-                // 按时间排序（最新的在前）
-                filteredRecords.sort((a, b) => new Date(b.checkoutTime) - new Date(a.checkoutTime));
-                
-                // 渲染记录列表
-                const recordsList = document.getElementById('recordsList');
-                recordsList.innerHTML = '';
-                
-                if (filteredRecords.length === 0) {
-                    recordsList.innerHTML = `
-                        <div class="py-12 text-center text-medium">
-                            <i class="fa fa-file-text-o text-4xl mb-3"></i>
-                            <p>没有找到符合条件的记录</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                filteredRecords.forEach(record => {
-                    const part = data.parts.find(p => p.id === record.partId);
-                    const master = data.masters.find(m => m.id === record.masterId);
-                    
-                    if (part && master) {
-                        const recordElement = document.createElement('div');
-                        recordElement.className = 'card';
-                        
-                        const statusClass = record.status === 'checkout' ? 'text-primary' : 'text-success';
-                        const statusIcon = record.status === 'checkout' ? 'fa-sign-out' : 'fa-sign-in';
-                        const statusText = record.status === 'checkout' ? '领用' : '归还';
-                        
-                        let conditionHtml = '';
-                        if (record.status === 'returned') {
-                            conditionHtml = `<p class="text-sm"><span class="text-medium">归还状态：</span>${getStatusBadge(record.condition)}</p>`;
-                        }
-                        
-                        recordElement.innerHTML = `
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="flex items-center">
-                                        <h3 class="font-bold">${part.name}</h3>
-                                        <span class="badge ${record.status === 'checkout' ? 'badge-primary' : 'badge-success'} ml-2">${statusText}</span>
-                                    </div>
-                                    <p class="text-sm text-medium">${part.model || '无型号'}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-lg font-bold">${record.quantity} ${part.unit}</p>
-                                    <div class="flex items-center justify-end mt-1 text-xs">
-                                        <i class="fa ${statusIcon} ${statusClass} mr-1"></i>
-                                        <span>${master.name}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-3 pt-3 border-t border-gray-100">
-                                <p class="text-sm"><span class="text-medium">领用时间：</span>${formatDateTime(record.checkoutTime)}</p>
-                                ${record.status === 'returned' ? `<p class="text-sm"><span class="text-medium">归还时间：</span>${formatDateTime(record.returnTime)}</p>` : ''}
-                                ${conditionHtml}
-                                ${record.purpose ? `<p class="text-sm"><span class="text-medium">用途：</span>${record.purpose}</p>` : ''}
-                                ${record.notes ? `<p class="text-sm"><span class="text-medium">备注：</span>${record.notes}</p>` : ''}
-                            </div>
-                        `;
-                        recordsList.appendChild(recordElement);
-                    }
-                });
-            }
-
-            loadMastersList() {
-                const data = getData();
-                const mastersList = document.getElementById('mastersList');
-                mastersList.innerHTML = '';
-                
-                if (data.masters.length === 0) {
-                    mastersList.innerHTML = `
-                        <div class="py-8 text-center text-medium">
-                            <i class="fa fa-user-o text-3xl mb-2"></i>
-                            <p>暂无师傅信息</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                data.masters.forEach(master => {
-                    const masterElement = document.createElement('div');
-                    masterElement.className = 'flex justify-between items-center p-3 border-b border-gray-100';
-                    masterElement.innerHTML = `
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center mr-3">
-                                <span class="text-primary font-bold">${master.name.charAt(0)}</span>
-                            </div>
-                            <div>
-                                <p class="font-medium">${master.name}</p>
-                                <p class="text-xs text-medium">${master.phone || '无联系方式'}</p>
-                            </div>
-                        </div>
-                        <div>
-                            <button onclick="pageController.editMaster('${master.id}')" class="p-2 text-primary hover:bg-gray-100 rounded-full">
-                                <i class="fa fa-pencil"></i>
-                            </button>
-                            <button onclick="pageController.deleteMaster('${master.id}')" class="p-2 text-danger hover:bg-gray-100 rounded-full">
-                                <i class="fa fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                    mastersList.appendChild(masterElement);
-                });
-            }
-
-            editMaster(masterId) {
-                const data = getData();
-                const master = data.masters.find(m => m.id === masterId);
-                
-                if (master) {
-                    document.getElementById('editMasterTitle').textContent = '编辑师傅';
-                    document.getElementById('masterId').value = master.id;
-                    document.getElementById('masterName').value = master.name;
-                    document.getElementById('masterPhone').value = master.phone || '';
-                    document.getElementById('editMasterModal').classList.remove('hidden');
-                }
-            }
-
-            deleteMaster(masterId) {
-                const data = getData();
-                const master = data.masters.find(m => m.id === masterId);
-                
-                if (master) {
-                    // 检查是否有未归还的记录
-                    const activeRecords = data.records.filter(r => r.masterId === masterId && r.status === 'checkout');
-                    
-                    if (activeRecords.length > 0) {
-                        showToast('无法删除：该师傅有未归还的领用记录');
-                        return;
-                    }
-                    
-                    showConfirm(
-                        '删除师傅',
-                        `确定要删除师傅"${master.name}"吗？此操作无法撤销。`,
-                        () => {
-                            data.masters = data.masters.filter(m => m.id !== masterId);
-                            saveData(data);
-                            this.loadMastersList();
-                            showToast('师傅已删除');
-                        }
-                    );
-                }
-            }
-
-            saveMaster() {
-                const masterId = document.getElementById('masterId').value;
-                const name = document.getElementById('masterName').value.trim();
-                const phone = document.getElementById('masterPhone').value.trim();
-                
-                if (!name) {
-                    showToast('请输入师傅姓名');
-                    return;
-                }
-                
-                const data = getData();
-                
-                if (masterId) {
-                    // 编辑现有师傅
-                    const masterIndex = data.masters.findIndex(m => m.id === masterId);
-                    
-                    if (masterIndex !== -1) {
-                        data.masters[masterIndex] = {
-                            ...data.masters[masterIndex],
-                            name,
-                            phone
-                        };
-                        
-                        saveData(data);
-                        document.getElementById('editMasterModal').classList.add('hidden');
-                        this.loadMastersList();
-                        showToast('师傅信息已更新');
-                    }
-                } else {
-                    // 添加新师傅
-                    const newMaster = {
-                        id: generateId('m'),
-                        name,
-                        phone,
-                        avatar: ''
-                    };
-                    
-                    data.masters.push(newMaster);
-                    saveData(data);
-                    document.getElementById('editMasterModal').classList.add('hidden');
-                    this.loadMastersList();
-                    showToast('师傅已添加');
-                }
-            }
-
-            loadCategoriesList() {
-                const data = getData();
-                const categoriesList = document.getElementById('categoriesList');
-                categoriesList.innerHTML = '';
-                
-                if (data.categories.length === 0) {
-                    categoriesList.innerHTML = `
-                        <div class="py-8 text-center text-medium">
-                            <i class="fa fa-folder-o text-3xl mb-2"></i>
-                            <p>暂无分类</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                data.categories.forEach(category => {
-                    // 计算该分类下的配件数量
-                    const partCount = data.parts.filter(p => p.category === category.id).length;
-                    
-                    const categoryElement = document.createElement('div');
-                    categoryElement.className = 'flex justify-between items-center p-3 border-b border-gray-100';
-                    categoryElement.innerHTML = `
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-                                <i class="fa fa-folder text-purple-600"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium">${category.name}</p>
-                                <p class="text-xs text-medium">${partCount} 个配件</p>
-                            </div>
-                        </div>
-                        <button onclick="pageController.deleteCategory('${category.id}')" class="p-2 text-danger hover:bg-gray-100 rounded-full">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    `;
-                    categoriesList.appendChild(categoryElement);
-                });
-                
-                // 绑定添加分类按钮
-                document.getElementById('addCategoryBtn').addEventListener('click', () => {
-                    const newCategory = document.getElementById('newCategoryInput').value.trim();
-                    if (newCategory) {
-                        this.addCategory(newCategory);
-                        document.getElementById('newCategoryInput').value = '';
-                    }
-                });
-                
-                // 绑定回车键添加分类
-                document.getElementById('newCategoryInput').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        const newCategory = document.getElementById('newCategoryInput').value.trim();
-                        if (newCategory) {
-                            this.addCategory(newCategory);
-                            document.getElementById('newCategoryInput').value = '';
-                        }
-                    }
-                });
-            }
-
-            addCategory(name) {
-                const data = getData();
-                
-                // 检查分类是否已存在
-                if (data.categories.some(c => c.name === name)) {
-                    showToast('分类已存在');
-                    return;
-                }
-                
-                const newCategory = {
-                    id: generateId('c'),
-                    name
-                };
-                
-                data.categories.push(newCategory);
-                saveData(data);
-                this.loadCategoriesList();
-                showToast('分类已添加');
-            }
-
-            deleteCategory(categoryId) {
-                const data = getData();
-                const category = data.categories.find(c => c.id === categoryId);
-                
-                if (category) {
-                    // 检查是否有配件使用该分类
-                    const partsInCategory = data.parts.filter(p => p.category === categoryId);
-                    
-                    if (partsInCategory.length > 0) {
-                        showToast(`无法删除：该分类下有 ${partsInCategory.length} 个配件`);
-                        return;
-                    }
-                    
-                    showConfirm(
-                        '删除分类',
-                        `确定要删除分类"${category.name}"吗？此操作无法撤销。`,
-                        () => {
-                            data.categories = data.categories.filter(c => c.id !== categoryId);
-                            saveData(data);
-                            this.loadCategoriesList();
-                            showToast('分类已删除');
-                        }
-                    );
-                }
-            }
-
-            searchParts(query) {
-                if (!query) {
-                    document.getElementById('searchResults').innerHTML = '';
-                    return;
-                }
-                
-                const data = getData();
-                const parts = data.parts;
-                
-                const results = parts.filter(part => 
-                    part.name.toLowerCase().includes(query) || 
-                    (part.model && part.model.toLowerCase().includes(query)) ||
-                    (part.barcode && part.barcode.includes(query))
-                );
-                
-                const searchResults = document.getElementById('searchResults');
-                searchResults.innerHTML = '';
-                
-                if (results.length === 0) {
-                    searchResults.innerHTML = `
-                        <div class="py-8 text-center text-medium">
-                            <i class="fa fa-search text-3xl mb-2"></i>
-                            <p>没有找到匹配的配件</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                results.forEach(part => {
-                    const stockStatus = getStockStatus(part);
-                    
-                    const resultElement = document.createElement('div');
-                    resultElement.className = 'flex justify-between items-center p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
-                    resultElement.onclick = () => {
-                        document.getElementById('searchModal').classList.add('hidden');
-                        this.loadPage('parts');
-                        // 这里可以添加滚动到该配件的逻辑
-                    };
-                    resultElement.innerHTML = `
-                        <div>
-                            <p class="font-medium">${part.name}</p>
-                            <p class="text-xs text-medium">${part.model || '无型号'}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold">${part.availableQuantity}/${part.totalQuantity}</p>
-                            <div class="flex items-center justify-end text-xs">
-                                <i class="fa ${stockStatus.icon} ${stockStatus.class} mr-1"></i>
-                                <span>${stockStatus.text}</span>
-                            </div>
-                        </div>
-                    `;
-                    searchResults.appendChild(resultElement);
-                });
-            }
-
-            exportData() {
-                const data = getData();
-                const dataStr = JSON.stringify(data, null, 2);
-                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                
-                const exportFileDefaultName = `warehouse-data-${new Date().toISOString().split('T')[0]}.json`;
-                
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', dataUri);
-                linkElement.setAttribute('download', exportFileDefaultName);
-                linkElement.click();
-                
-                showToast('数据已导出');
-            }
-
-            importData(data) {
-                try {
-                    // 验证数据格式
-                    if (!data.masters || !data.parts || !data.records) {
-                        showToast('导入失败：无效的数据格式');
-                        return;
-                    }
-                    
-                    showConfirm(
-                        '导入数据',
-                        '此操作将覆盖当前所有数据。确定要继续吗？',
-                        () => {
-                            saveData(data);
-                            showToast('数据已导入');
-                            
-                            // 重新加载当前页面
-                            this.loadPage(this.currentPage);
-                        }
-                    );
-                } catch (error) {
-                    showToast('导入失败：' + error.message);
-                }
-            }
-
-            startScan(type) {
-                document.getElementById('scanModal').classList.remove('hidden');
-                
-                // 这里模拟扫码功能，实际应用中可以使用摄像头API
-                // 由于浏览器安全限制，无法在演示中直接访问摄像头
-                // 这里使用setTimeout模拟扫描过程
-                
-                setTimeout(() => {
-                    this.stopScan();
-                    document.getElementById('scanModal').classList.add('hidden');
-                    
-                    // 模拟扫描结果
-                    const mockBarcodes = {
-                        '1234567890123': 'p1', // 电机轴承
-                        '1234567890124': 'p2', // 电阻
-                        '1234567890125': 'p3', // 十字螺丝刀
-                        '1234567890126': 'p4'  // 润滑油
-                    };
-                    
-                    // 随机选择一个条码
-                    const randomBarcode = Object.keys(mockBarcodes)[Math.floor(Math.random() * Object.keys(mockBarcodes).length)];
-                    const partId = mockBarcodes[randomBarcode];
-                    
-                    if (type === 'barcode') {
-                        document.getElementById('partBarcode').value = randomBarcode;
-                        document.getElementById('editPartModal').classList.remove('hidden');
-                    } else if (type === 'checkout' || type === 'quickCheckout') {
-                        const data = getData();
-                        const part = data.parts.find(p => p.id === partId);
-                        
-                        if (part) {
-                            if (type === 'checkout') {
-                                document.getElementById('checkoutPart').value = part.id;
-                                document.getElementById('checkoutModal').classList.remove('hidden');
-                            } else {
-                                document.getElementById('quickCheckoutPart').value = part.id;
-                            }
-                            showToast(`已扫描: ${part.name}`);
-                        } else {
-                            showToast('未找到匹配的配件');
-                        }
-                    }
-                }, 2000);
-            }
-
-            stopScan() {
-                // 实际应用中，这里应该停止摄像头
-            }
-        }
-
-        // 初始化应用
-        const pageController = new PageController();
-    </script>
+const var_red = 'var(--red)';
+const var_green = 'var(--green)';
+</script>
 </body>
 </html>
