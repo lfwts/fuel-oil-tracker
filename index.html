@@ -89,6 +89,7 @@
     <button class="tab active" data-tab="home">🏠 首页</button>
     <button class="tab" data-tab="parts">🧰 配件</button>
     <button class="tab" data-tab="checkout">📤 领用</button>
+    <button class="tab" data-tab="adjust">⚙️ 库存</button>
     <button class="tab" data-tab="records">📋 记录</button>
 </nav>
 
@@ -112,6 +113,131 @@
         <input type="text" id="searchParts" placeholder="搜索配件..." oninput="filterParts()">
     </div>
     <div id="partsList"></div>
+</div>
+
+<div id="adjust-panel" class="panel">
+    <div class="alert alert-gold" style="background:rgba(245,158,11,0.15);border:1px solid #f59e0b;color:#f59e0b;">⚙️ 管理入口：进货入库、报损减库、直接调数</div>
+    
+    <div class="section">
+        <div class="section-title">📦 进货入库</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="section-title">配件名称</label>
+                <div class="search-bar" style="margin-bottom:0;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="stockInSearch" placeholder="输入配件名称搜索..." oninput="searchPartsForStockIn()">
+                </div>
+                <div id="stockInSuggestions" style="margin-top:8px;max-height:200px;overflow-y:auto;"></div>
+                <input type="hidden" id="stockInPartId">
+                <div id="selectedStockInInfo" style="display:none;margin-top:12px;padding:12px;background:#2d2d4a;border-radius:8px;"></div>
+            </div>
+            <div class="form-group">
+                <label class="section-title">入库数量</label>
+                <div class="stepper">
+                    <button class="stepper-btn" onclick="changeQty('stockInQty', -1)">−</button>
+                    <span class="stepper-val" id="stockInQty">1</span>
+                    <button class="stepper-btn" onclick="changeQty('stockInQty', 1)">+</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="section-title">备注</label>
+                <input type="text" class="form-input" id="stockInNote" placeholder="例：XX供应商进货">
+            </div>
+            <button class="btn btn-primary" onclick="doStockIn()">📦 确认入库</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🛠️ 报损减库</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="section-title">配件名称</label>
+                <div class="search-bar" style="margin-bottom:0;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="lossSearch" placeholder="输入配件名称搜索..." oninput="searchPartsForLoss()">
+                </div>
+                <div id="lossSuggestions" style="margin-top:8px;max-height:200px;overflow-y:auto;"></div>
+                <input type="hidden" id="lossPartId">
+                <div id="selectedLossInfo" style="display:none;margin-top:12px;padding:12px;background:#2d2d4a;border-radius:8px;"></div>
+            </div>
+            <div class="form-group">
+                <label class="section-title">损耗数量</label>
+                <div class="stepper">
+                    <button class="stepper-btn" onclick="changeQty('lossQty', -1)">−</button>
+                    <span class="stepper-val" id="lossQty">1</span>
+                    <button class="stepper-btn" onclick="changeQty('lossQty', 1)">+</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="section-title">损耗原因</label>
+                <select class="form-select" id="lossReason">
+                    <option value="报损">报损（变质/损坏）</option>
+                    <option value="丢失">丢失</option>
+                    <option value="报废">报废</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <button class="btn btn-secondary" onclick="doLoss()" style="border-color:#ef4444;color:#ef4444;">🛠️ 确认减库</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">✏️ 直接修改库存</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="section-title">配件名称</label>
+                <div class="search-bar" style="margin-bottom:0;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="manualSearch" placeholder="输入配件名称搜索..." oninput="searchPartsForManual()">
+                </div>
+                <div id="manualSuggestions" style="margin-top:8px;max-height:200px;overflow-y:auto;"></div>
+                <input type="hidden" id="manualPartId">
+                <div id="selectedManualInfo" style="display:none;margin-top:12px;padding:12px;background:#2d2d4a;border-radius:8px;"></div>
+            </div>
+            <div class="form-group">
+                <label class="section-title">新库存数量</label>
+                <div class="stepper">
+                    <button class="stepper-btn" onclick="changeQty('manualQty', -1)">−</button>
+                    <span class="stepper-val" id="manualQty">0</span>
+                    <button class="stepper-btn" onclick="changeQty('manualQty', 1)">+</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="section-title">调整说明</label>
+                <input type="text" class="form-input" id="manualNote" placeholder="例：盘点调整">
+            </div>
+            <button class="btn btn-secondary" onclick="doManual()" style="border-color:#f59e0b;color:#f59e0b;">✏️ 确认调整</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">➕ 新增配件</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="section-title">配件名称</label>
+                <input type="text" class="form-input" id="newPartName" placeholder="例：油嘴">
+            </div>
+            <div class="form-group">
+                <label class="section-title">型号/规格</label>
+                <input type="text" class="form-input" id="newPartModel" placeholder="例：标准型">
+            </div>
+            <div class="form-group">
+                <label class="section-title">初始库存</label>
+                <input type="number" class="form-input" id="newPartStock" value="0">
+            </div>
+            <div class="form-group">
+                <label class="section-title">警戒库存</label>
+                <input type="number" class="form-input" id="newPartAlert" value="3">
+            </div>
+            <div class="form-group">
+                <label class="section-title">分类</label>
+                <select class="form-select" id="newPartCategory">
+                    <option value="">请选择</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="addNewPart()">➕ 添加配件</button>
+        </div>
+    </div>
 </div>
 
 <div id="checkout-panel" class="panel">
@@ -195,6 +321,7 @@
     <button class="nav-item active" onclick="switchTab('home')"><span class="nav-icon">🏠</span>首页</button>
     <button class="nav-item" onclick="switchTab('parts')"><span class="nav-icon">🧰</span>配件</button>
     <button class="nav-item" onclick="switchTab('checkout')"><span class="nav-icon">📤</span>领用</button>
+    <button class="nav-item" onclick="switchTab('adjust')"><span class="nav-icon">⚙️</span>库存</button>
     <button class="nav-item" onclick="switchTab('records')"><span class="nav-icon">📋</span>记录</button>
 </nav>
 
@@ -280,6 +407,7 @@ function getCategoryName(id) {
 }
 
 function getPersonName(id) {
+    if (!id || id === 0) return '管理员';
     const p = persons.find(x => x.id === id);
     return p ? p.name : '未知';
 }
@@ -297,13 +425,14 @@ function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === tab + '-panel'));
     document.querySelectorAll('.nav-item').forEach((n, i) => {
-        const tabs = ['home','parts','checkout','records'];
+        const tabs = ['home','parts','checkout','adjust','records'];
         n.classList.toggle('active', tabs[i] === tab);
     });
     
     if (tab === 'home') renderHome();
     if (tab === 'parts') renderParts();
     if (tab === 'checkout') initCheckout();
+    if (tab === 'adjust') initAdjust();
     if (tab === 'records') loadRecords();
 }
 
@@ -558,6 +687,276 @@ async function doReturn() {
     switchTab('home');
 }
 
+// ==================== 库存管理 ====================
+
+function initAdjust() {
+    // 填充分类下拉框
+    const catOptions = categories.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
+    document.getElementById('newPartCategory').innerHTML = '<option value="">请选择</option>' + catOptions;
+    
+    // 重置表单
+    document.getElementById('stockInSearch').value = '';
+    document.getElementById('lossSearch').value = '';
+    document.getElementById('manualSearch').value = '';
+    document.getElementById('stockInSuggestions').innerHTML = '';
+    document.getElementById('lossSuggestions').innerHTML = '';
+    document.getElementById('manualSuggestions').innerHTML = '';
+    document.getElementById('selectedStockInInfo').style.display = 'none';
+    document.getElementById('selectedLossInfo').style.display = 'none';
+    document.getElementById('selectedManualInfo').style.display = 'none';
+    document.getElementById('stockInQty').textContent = '1';
+    document.getElementById('lossQty').textContent = '1';
+    document.getElementById('manualQty').textContent = '0';
+    document.getElementById('stockInNote').value = '';
+    document.getElementById('manualNote').value = '';
+    document.getElementById('newPartName').value = '';
+    document.getElementById('newPartModel').value = '';
+    document.getElementById('newPartStock').value = '0';
+    document.getElementById('newPartAlert').value = '3';
+}
+
+function searchPartsForStockIn() {
+    const query = document.getElementById('stockInSearch').value.toLowerCase().trim();
+    const suggestions = document.getElementById('stockInSuggestions');
+    if (!query) { suggestions.innerHTML = ''; return; }
+    
+    const filtered = parts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.model && p.model.toLowerCase().includes(query))
+    );
+    suggestions.innerHTML = filtered.length === 0 ? 
+        '<div style="padding:12px;color:#64748b;font-size:13px;">未找到配件。可在下方"新增配件"中添加。</div>' :
+        filtered.map(p => `
+        <div class="card" style="margin-bottom:8px;cursor:pointer;" onclick="selectPartForStockIn(${p.id})">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-weight:600;">${p.name}${p.model ? ' <span style="font-size:12px;color:#64748b">'+p.model+'</span>' : ''}</div></div>
+                <div style="font-size:20px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectPartForStockIn(id) {
+    const p = parts.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('stockInPartId').value = id;
+    document.getElementById('stockInSearch').value = '';
+    document.getElementById('stockInSuggestions').innerHTML = '';
+    document.getElementById('selectedStockInInfo').style.display = 'block';
+    document.getElementById('selectedStockInInfo').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-weight:600;">✓ ${p.name}${p.model ? ' ('+p.model+')' : ''}</div></div>
+            <div style="font-size:24px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+        </div>
+    `;
+    document.getElementById('stockInQty').textContent = '1';
+}
+
+function searchPartsForLoss() {
+    const query = document.getElementById('lossSearch').value.toLowerCase().trim();
+    const suggestions = document.getElementById('lossSuggestions');
+    if (!query) { suggestions.innerHTML = ''; return; }
+    
+    const filtered = parts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.model && p.model.toLowerCase().includes(query))
+    );
+    suggestions.innerHTML = filtered.length === 0 ? 
+        '<div style="padding:12px;color:#64748b;font-size:13px;">未找到配件</div>' :
+        filtered.map(p => `
+        <div class="card" style="margin-bottom:8px;cursor:pointer;" onclick="selectPartForLoss(${p.id})">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-weight:600;">${p.name}${p.model ? ' <span style="font-size:12px;color:#64748b">'+p.model+'</span>' : ''}</div></div>
+                <div style="font-size:20px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectPartForLoss(id) {
+    const p = parts.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('lossPartId').value = id;
+    document.getElementById('lossSearch').value = '';
+    document.getElementById('lossSuggestions').innerHTML = '';
+    document.getElementById('selectedLossInfo').style.display = 'block';
+    document.getElementById('selectedLossInfo').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-weight:600;">✓ ${p.name}${p.model ? ' ('+p.model+')' : ''}</div></div>
+            <div style="font-size:24px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+        </div>
+    `;
+    document.getElementById('lossQty').textContent = '1';
+    document.getElementById('lossQty').dataset.max = p.stock;
+}
+
+function searchPartsForManual() {
+    const query = document.getElementById('manualSearch').value.toLowerCase().trim();
+    const suggestions = document.getElementById('manualSuggestions');
+    if (!query) { suggestions.innerHTML = ''; return; }
+    
+    const filtered = parts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.model && p.model.toLowerCase().includes(query))
+    );
+    suggestions.innerHTML = filtered.length === 0 ? 
+        '<div style="padding:12px;color:#64748b;font-size:13px;">未找到配件</div>' :
+        filtered.map(p => `
+        <div class="card" style="margin-bottom:8px;cursor:pointer;" onclick="selectPartForManual(${p.id})">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-weight:600;">${p.name}${p.model ? ' <span style="font-size:12px;color:#64748b">'+p.model+'</span>' : ''}</div></div>
+                <div style="font-size:20px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectPartForManual(id) {
+    const p = parts.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('manualPartId').value = id;
+    document.getElementById('manualSearch').value = '';
+    document.getElementById('manualSuggestions').innerHTML = '';
+    document.getElementById('selectedManualInfo').style.display = 'block';
+    document.getElementById('selectedManualInfo').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><div style="font-weight:600;">✓ ${p.name}${p.model ? ' ('+p.model+')' : ''}</div></div>
+            <div style="font-size:24px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+        </div>
+    `;
+    document.getElementById('manualQty').textContent = p.stock;
+}
+
+async function doStockIn() {
+    const partId = parseInt(document.getElementById('stockInPartId').value);
+    const qty = parseInt(document.getElementById('stockInQty').textContent);
+    const note = document.getElementById('stockInNote').value;
+    
+    if (!partId) return alert('请选择配件');
+    if (qty <= 0) return alert('数量必须大于0');
+    
+    const p = parts.find(x => x.id === partId);
+    const newStock = p.stock + qty;
+    
+    const { error: e1 } = await db.from('parts').update({ stock: newStock }).eq('id', partId);
+    if (e1) return alert('更新失败：' + e1.message);
+    
+    const { error: e2 } = await db.from('records').insert({
+        part_id: partId,
+        part_name: p.name + (p.model ? ' ('+p.model+')' : ''),
+        person_id: 0,
+        qty: qty,
+        type: 'in',
+        note: note || '进货入库'
+    });
+    if (e2) return alert('记录失败：' + e2.message);
+    
+    await loadData();
+    alert('✅ 入库成功！库存 +' + qty + '，当前：' + newStock);
+    initAdjust();
+}
+
+async function doLoss() {
+    const partId = parseInt(document.getElementById('lossPartId').value);
+    const qty = parseInt(document.getElementById('lossQty').textContent);
+    const reason = document.getElementById('lossReason').value;
+    
+    if (!partId) return alert('请选择配件');
+    if (qty <= 0) return alert('数量必须大于0');
+    
+    const p = parts.find(x => x.id === partId);
+    if (p.stock < qty) return alert('库存不足！当前库存：' + p.stock);
+    
+    if (!confirm('确认减少 ' + qty + ' 件《' + p.name + '》？原因：' + reason)) return;
+    
+    const newStock = p.stock - qty;
+    const { error: e1 } = await db.from('parts').update({ stock: newStock }).eq('id', partId);
+    if (e1) return alert('更新失败：' + e1.message);
+    
+    const { error: e2 } = await db.from('records').insert({
+        part_id: partId,
+        part_name: p.name + (p.model ? ' ('+p.model+')' : ''),
+        person_id: 0,
+        qty: qty,
+        type: 'loss',
+        note: reason
+    });
+    if (e2) return alert('记录失败：' + e2.message);
+    
+    await loadData();
+    alert('✅ 减库成功！库存 -' + qty + '，当前：' + newStock);
+    initAdjust();
+}
+
+async function doManual() {
+    const partId = parseInt(document.getElementById('manualPartId').value);
+    const newStock = parseInt(document.getElementById('manualQty').textContent);
+    const note = document.getElementById('manualNote').value;
+    
+    if (!partId) return alert('请选择配件');
+    if (newStock < 0) return alert('库存不能为负数');
+    if (!note.trim()) return alert('请填写调整说明');
+    
+    const p = parts.find(x => x.id === partId);
+    const diff = newStock - p.stock;
+    
+    if (diff === 0) return alert('库存未变化');
+    
+    if (!confirm('《' + p.name + '》库存从 ' + p.stock + ' 调整为 ' + newStock + '（' + (diff>0?'+':'') + diff + '）')) return;
+    
+    const { error: e1 } = await db.from('parts').update({ stock: newStock }).eq('id', partId);
+    if (e1) return alert('更新失败：' + e1.message);
+    
+    const { error: e2 } = await db.from('records').insert({
+        part_id: partId,
+        part_name: p.name + (p.model ? ' ('+p.model+')' : ''),
+        person_id: 0,
+        qty: Math.abs(diff),
+        type: 'adj',
+        note: note
+    });
+    if (e2) return alert('记录失败：' + e2.message);
+    
+    await loadData();
+    alert('✅ 调整成功！新库存：' + newStock);
+    initAdjust();
+}
+
+async function addNewPart() {
+    const name = document.getElementById('newPartName').value.trim();
+    const model = document.getElementById('newPartModel').value.trim();
+    const stock = parseInt(document.getElementById('newPartStock').value) || 0;
+    const alertStock = parseInt(document.getElementById('newPartAlert').value) || 3;
+    const categoryId = parseInt(document.getElementById('newPartCategory').value) || null;
+    
+    if (!name) return alert('请填写配件名称');
+    
+    const { data, error } = await db.from('parts').insert({
+        name: name,
+        model: model,
+        stock: stock,
+        alert_stock: alertStock,
+        category_id: categoryId
+    }).select();
+    
+    if (error) return alert('添加失败：' + error.message);
+    
+    if (stock > 0) {
+        await db.from('records').insert({
+            part_id: data[0].id,
+            part_name: name + (model ? ' ('+model+')' : ''),
+            person_id: 0,
+            qty: stock,
+            type: 'in',
+            note: '初始库存'
+        });
+    }
+    
+    await loadData();
+    alert('✅ 添加成功！');
+    initAdjust();
+}
+
 function loadRecords() {
     const type = document.getElementById('filterType').value;
     const personId = parseInt(document.getElementById('filterPerson').value) || 0;
@@ -566,6 +965,18 @@ function loadRecords() {
     if (personFilter.options.length <= 1) {
         personFilter.innerHTML = '<option value="">全部人员</option>' + 
             persons.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
+    }
+    
+    // 确保下拉框有所有类型
+    const typeFilter = document.getElementById('filterType');
+    if (typeFilter.options.length < 5) {
+        typeFilter.innerHTML = '<option value="">全部类型</option>' +
+            '<option value="out">领用</option>' +
+            '<option value="ret">归还</option>' +
+            '<option value="in">入库</option>' +
+            '<option value="loss">报损</option>' +
+            '<option value="adj">调整</option>';
+        typeFilter.value = type;
     }
     
     let filtered = [...records];
@@ -577,18 +988,30 @@ function loadRecords() {
         return;
     }
     
-    document.getElementById('recordsList').innerHTML = filtered.map(r => `
-        <div class="record-item ${r.type}">
+    const typeLabels = {
+        out: { label: '📤 领用', color: '#ef4444', sign: '-' },
+        ret: { label: '📥 归还', color: '#10b981', sign: '+' },
+        in:  { label: '📦 入库', color: '#f59e0b', sign: '+' },
+        loss:{ label: '🛠️ 报损', color: '#ef4444', sign: '-' },
+        adj: { label: '✏️ 调整', color: '#3b82f6', sign: '±' }
+    };
+    
+    document.getElementById('recordsList').innerHTML = filtered.map(r => {
+        const t = typeLabels[r.type] || { label: r.type, color: '#64748b', sign: '' };
+        return `
+        <div class="record-item ${r.type === 'out' || r.type === 'loss' ? 'out' : 'ret'}">
             <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-                <div style="font-weight:600;">${r.part_name}</div>
-                <div style="font-size:13px;font-weight:700;color:${r.type==='out'?'#ef4444':'#10b981'};">${r.type==='out'?'-':'+'}${r.qty}件</div>
+                <div style="font-weight:600;">${t.label} ${r.part_name}</div>
+                <div style="font-size:13px;font-weight:700;color:${t.color};">${t.sign}${r.qty}件</div>
             </div>
             <div class="record-meta">
-                <span>👤 ${getPersonName(r.person_id)}</span>
+                <span>👤 ${getPersonName(r.person_id) || '管理员'}</span>
                 <span>⏰ ${formatDate(r.created_at)}</span>
+                ${r.note ? '<span style="color:#f59e0b;">📝 ' + r.note + '</span>' : ''}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Tab 点击
