@@ -527,6 +527,31 @@ async function deletePart(id) {
     alert('✅ 删除成功');
 }
 
+async function adjustStock(partId, delta) {
+    if (!isAdmin) return alert('请先解锁管理员权限');
+    
+    const p = parts.find(x => x.id === partId);
+    if (!p) return;
+    
+    const newStock = Math.max(0, p.stock + delta);
+    if (newStock === p.stock) return;
+    
+    const { error } = await db.from('parts').update({ stock: newStock }).eq('id', partId);
+    if (error) return alert('调整失败：' + error.message);
+    
+    // 记录调整操作
+    await db.from('records').insert({
+        part_id: partId,
+        person_id: 0,
+        type: 'adj',
+        qty: delta > 0 ? delta : -delta,
+        note: delta > 0 ? '管理员增加库存' : '管理员减少库存'
+    });
+    
+    await loadData();
+    renderHome();
+}
+
 function renderHome() {
     const totalStock = parts.reduce((s, p) => s + p.stock, 0);
     const lowStock = parts.filter(p => p.stock <= p.alert_stock);
@@ -558,9 +583,29 @@ function renderHome() {
     
     grid.innerHTML = parts.map(p => {
         const isLow = p.stock <= p.alert_stock;
+        
+        // 管理员模式：显示删除和调节按钮
+        if (isAdmin) {
+            return `
+            <div class="part-item ${isLow ? 'low' : ''}">
+                <div style="position:absolute;top:4px;right:4px;display:flex;gap:4px;">
+                    <button class="delete-btn" onclick="event.stopPropagation();deletePart(${p.id})" title="删除配件">×</button>
+                </div>
+                <div class="part-name" style="padding-top:8px;">${p.name}</div>
+                <div class="part-qty ${isLow ? 'low' : 'normal'}">${p.stock}</div>
+                <div class="part-alert">警戒: ${p.alert_stock}</div>
+                <div style="display:flex;gap:4px;justify-content:center;margin-top:6px;">
+                    <button class="stepper-btn" style="width:28px;height:28px;font-size:14px;" onclick="event.stopPropagation();adjustStock(${p.id}, -1)">−</button>
+                    <button class="stepper-btn" style="width:28px;height:28px;font-size:14px;" onclick="event.stopPropagation();adjustStock(${p.id}, 1)">+</button>
+                </div>
+                <button class="btn btn-secondary" style="margin-top:6px;padding:4px 8px;font-size:11px;" onclick="event.stopPropagation();showCheckoutHistory(${p.id})">📋 记录</button>
+            </div>
+            `;
+        }
+        
+        // 普通模式：点击查看领用记录
         return `
         <div class="part-item ${isLow ? 'low' : ''}" onclick="showCheckoutHistory(${p.id})">
-            ${isAdmin ? `<button class="delete-btn" onclick="event.stopPropagation();deletePart(${p.id})" title="删除">×</button>` : ''}
             <div class="part-name">${p.name}</div>
             <div class="part-qty ${isLow ? 'low' : 'normal'}">${p.stock}</div>
             <div class="part-alert">警戒: ${p.alert_stock}</div>
