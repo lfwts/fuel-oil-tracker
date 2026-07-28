@@ -69,9 +69,23 @@
         .search-bar { position: relative; margin-bottom: 16px; }
         .search-bar input { width: 100%; padding: 12px 14px 12px 40px; background: #252540; border: 1px solid #3d3d5c; border-radius: 12px; color: #f1f5f9; font-size: 15px; box-sizing: border-box; }
         .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); }
+        .part-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .part-item { background: #252540; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #3d3d5c; position: relative; }
+        .part-item.low { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+        .part-item .part-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        .part-item .part-qty { font-size: 24px; font-weight: 700; font-family: monospace; }
+        .part-item .part-qty.low { color: #ef4444; }
+        .part-item .part-qty.normal { color: #10b981; }
+        .part-item .part-alert { font-size: 10px; color: #64748b; }
+        .delete-btn { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: #ef4444; border: none; border-radius: 50%; color: #fff; font-size: 14px; cursor: pointer; display: none; }
+        .admin-mode .delete-btn { display: flex; align-items: center; justify-content: center; }
+        .admin-toggle { position: fixed; top: 16px; right: 16px; z-index: 300; background: #252540; border: 1px solid #3d3d5c; border-radius: 20px; padding: 6px 14px; font-size: 12px; color: #64748b; cursor: pointer; }
+        .admin-toggle.active { background: #f59e0b; color: #000; }
     </style>
 </head>
 <body>
+<button class="admin-toggle" id="adminToggle" onclick="toggleAdmin()">🔒 管理员</button>
+
 <header class="header">
     <div class="header-top">
         <div class="logo">
@@ -95,6 +109,8 @@
 
 <div id="loadingScreen" class="loading">正在连接数据库...</div>
 
+<button class="admin-toggle" id="adminToggle" onclick="toggleAdmin()">🔒 管理员</button>
+
 <div id="home-panel" class="panel">
     <div class="section">
         <div class="section-title">📊 库存概览</div>
@@ -102,8 +118,8 @@
     </div>
     <div id="lowStockAlert"></div>
     <div class="section">
-        <div class="section-title">🚨 库存预警</div>
-        <div id="lowStockList"></div>
+        <div class="section-title">🧰 全部配件（共 <span id="totalParts">0</span> 种）</div>
+        <div class="part-grid" id="homePartsGrid"></div>
     </div>
 </div>
 
@@ -436,6 +452,40 @@ function switchTab(tab) {
     if (tab === 'records') loadRecords();
 }
 
+let isAdmin = false;
+
+function toggleAdmin() {
+    if (!isAdmin) {
+        const pwd = prompt('请输入管理员密码：');
+        if (pwd !== '123456') {
+            alert('密码错误！');
+            return;
+        }
+        isAdmin = true;
+        document.getElementById('adminToggle').classList.add('active');
+        document.getElementById('adminToggle').textContent = '🔓 已解锁';
+        document.body.classList.add('admin-mode');
+    } else {
+        isAdmin = false;
+        document.getElementById('adminToggle').classList.remove('active');
+        document.getElementById('adminToggle').textContent = '🔒 管理员';
+        document.body.classList.remove('admin-mode');
+    }
+    renderHome();
+}
+
+async function deletePart(id) {
+    if (!isAdmin) return alert('请先解锁管理员权限');
+    if (!confirm('确定删除此配件？删除后不可恢复！')) return;
+    
+    const { error } = await db.from('parts').delete().eq('id', id);
+    if (error) return alert('删除失败：' + error.message);
+    
+    await loadData();
+    renderHome();
+    alert('✅ 删除成功');
+}
+
 function renderHome() {
     const totalStock = parts.reduce((s, p) => s + p.stock, 0);
     const lowStock = parts.filter(p => p.stock <= p.alert_stock);
@@ -450,23 +500,32 @@ function renderHome() {
         <div class="stat-card"><div class="stat-value red">${lowStock.length}</div><div class="stat-label">库存预警</div></div>
     `;
     
+    document.getElementById('totalParts').textContent = parts.length;
+    
     if (lowStock.length > 0) {
-        document.getElementById('lowStockAlert').innerHTML = '<div class="alert alert-red">⚠️ 有 ' + lowStock.length + ' 种配件库存低于警戒线！</div>';
-        document.getElementById('lowStockList').innerHTML = lowStock.map(p => `
-            <div class="card">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                        <div style="font-weight:600;">${p.name}${p.model ? ' (' + p.model + ')' : ''}</div>
-                        <div style="font-size:11px;color:#64748b;">${getCategoryName(p.category_id)} · 警戒：${p.alert_stock}</div>
-                    </div>
-                    <div style="font-size:24px;font-weight:700;color:#ef4444;font-family:monospace;">${p.stock}</div>
-                </div>
-            </div>
-        `).join('');
+        document.getElementById('lowStockAlert').innerHTML = '<div class="alert alert-red">⚠️ ' + lowStock.length + ' 种配件库存不足！</div>';
     } else {
-        document.getElementById('lowStockAlert').innerHTML = '<div class="alert alert-green">✅ 所有配件库存正常</div>';
-        document.getElementById('lowStockList').innerHTML = '';
+        document.getElementById('lowStockAlert').innerHTML = '<div class="alert alert-green">✅ 库存正常</div>';
     }
+    
+    // 显示所有配件网格
+    const grid = document.getElementById('homePartsGrid');
+    if (parts.length === 0) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1;">暂无配件</div>';
+        return;
+    }
+    
+    grid.innerHTML = parts.map(p => {
+        const isLow = p.stock <= p.alert_stock;
+        return `
+        <div class="part-item ${isLow ? 'low' : ''}">
+            ${isAdmin ? `<button class="delete-btn" onclick="event.stopPropagation();deletePart(${p.id})" title="删除">×</button>` : ''}
+            <div class="part-name">${p.name}</div>
+            <div class="part-qty ${isLow ? 'low' : 'normal'}">${p.stock}</div>
+            <div class="part-alert">警戒: ${p.alert_stock}</div>
+        </div>
+        `;
+    }).join('');
 }
 
 function renderParts() {
