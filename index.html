@@ -106,6 +106,7 @@
     <button class="tab" data-tab="parts">🧰 配件</button>
     <button class="tab" data-tab="checkout">📤 领用</button>
     <button class="tab" data-tab="adjust">⚙️ 库存</button>
+    <button class="tab" data-tab="admin">🗂️ 管理</button>
     <button class="tab" data-tab="records">📋 记录</button>
 </nav>
 
@@ -129,6 +130,34 @@
         <input type="text" id="searchParts" placeholder="搜索配件..." oninput="filterParts()">
     </div>
     <div id="partsList"></div>
+</div>
+
+<div id="admin-panel" class="panel">
+    <div class="alert alert-gold" style="background:rgba(245,158,11,0.15);border:1px solid #f59e0b;color:#f59e0b;">🗂️ 分类管理 · 人员管理</div>
+    
+    <div class="section">
+        <div class="section-title">📂 配件分类管理</div>
+        <div id="categoryList"></div>
+        <div class="card" style="margin-top:12px;">
+            <div class="section-title">➕ 新增分类</div>
+            <div class="form-group">
+                <input type="text" class="form-input" id="newCategoryName" placeholder="分类名称">
+            </div>
+            <button class="btn btn-primary" onclick="addCategory()">➕ 添加分类</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">👥 人员管理</div>
+        <div id="personList"></div>
+        <div class="card" style="margin-top:12px;">
+            <div class="section-title">➕ 新增人员</div>
+            <div class="form-group">
+                <input type="text" class="form-input" id="newPersonName" placeholder="人员姓名">
+            </div>
+            <button class="btn btn-primary" onclick="addPerson()">➕ 添加人员</button>
+        </div>
+    </div>
 </div>
 
 <div id="adjust-panel" class="panel">
@@ -338,8 +367,19 @@
     <button class="nav-item" onclick="switchTab('parts')"><span class="nav-icon">🧰</span>配件</button>
     <button class="nav-item" onclick="switchTab('checkout')"><span class="nav-icon">📤</span>领用</button>
     <button class="nav-item" onclick="switchTab('adjust')"><span class="nav-icon">⚙️</span>库存</button>
+    <button class="nav-item" onclick="switchTab('admin')"><span class="nav-icon">🗂️</span>管理</button>
     <button class="nav-item" onclick="switchTab('records')"><span class="nav-icon">📋</span>记录</button>
 </nav>
+
+<div class="modal-overlay" id="checkoutHistoryModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">📋 领用记录</div>
+            <button class="modal-close" onclick="document.getElementById('checkoutHistoryModal').classList.remove('active')">×</button>
+        </div>
+        <div id="checkoutHistoryContent"></div>
+    </div>
+</div>
 
 <div class="modal-overlay" id="partDetailModal">
     <div class="modal">
@@ -441,7 +481,7 @@ function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === tab + '-panel'));
     document.querySelectorAll('.nav-item').forEach((n, i) => {
-        const tabs = ['home','parts','checkout','adjust','records'];
+        const tabs = ['home','parts','checkout','adjust','admin','records'];
         n.classList.toggle('active', tabs[i] === tab);
     });
     
@@ -449,6 +489,7 @@ function switchTab(tab) {
     if (tab === 'parts') renderParts();
     if (tab === 'checkout') initCheckout();
     if (tab === 'adjust') initAdjust();
+    if (tab === 'admin') initAdmin();
     if (tab === 'records') loadRecords();
 }
 
@@ -518,7 +559,7 @@ function renderHome() {
     grid.innerHTML = parts.map(p => {
         const isLow = p.stock <= p.alert_stock;
         return `
-        <div class="part-item ${isLow ? 'low' : ''}">
+        <div class="part-item ${isLow ? 'low' : ''}" onclick="showCheckoutHistory(${p.id})">
             ${isAdmin ? `<button class="delete-btn" onclick="event.stopPropagation();deletePart(${p.id})" title="删除">×</button>` : ''}
             <div class="part-name">${p.name}</div>
             <div class="part-qty ${isLow ? 'low' : 'normal'}">${p.stock}</div>
@@ -526,6 +567,127 @@ function renderHome() {
         </div>
         `;
     }).join('');
+}
+
+function showCheckoutHistory(partId) {
+    const p = parts.find(x => x.id === partId);
+    if (!p) return;
+    
+    const history = records.filter(r => r.part_id === partId && (r.type === 'out' || r.type === 'ret'));
+    const modal = document.getElementById('checkoutHistoryModal');
+    const content = document.getElementById('checkoutHistoryContent');
+    
+    let html = `<div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <div style="font-size:18px;font-weight:700;">${p.name}</div>
+                <div style="font-size:12px;color:#64748b;">${p.model || '无型号'}</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:24px;font-weight:700;color:#10b981;font-family:monospace;">${p.stock}</div>
+                <div style="font-size:11px;color:#64748b;">当前库存</div>
+            </div>
+        </div>
+    </div>`;
+    
+    if (history.length === 0) {
+        html += '<div class="empty">暂无领用记录</div>';
+    } else {
+        history.forEach(r => {
+            const isOut = r.type === 'out';
+            html += `<div class="record-item ${isOut ? 'out' : 'ret'}">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <div style="font-weight:600;">${isOut ? '📤 领用' : '📥 归还'}</div>
+                    <div style="font-size:13px;font-weight:700;color:${isOut ? '#ef4444' : '#10b981'};">${isOut ? '-' : '+'}${r.qty}件</div>
+                </div>
+                <div class="record-meta">
+                    <span>👤 ${getPersonName(r.person_id)}</span>
+                    <span>⏰ ${formatDate(r.created_at)}</span>
+                </div>
+            </div>`;
+        });
+    }
+    
+    content.innerHTML = html;
+    modal.classList.add('active');
+}
+
+function initAdmin() {
+    if (!isAdmin) {
+        alert('请先点击右上角 🔒 管理员 解锁！');
+        switchTab('home');
+        return;
+    }
+    
+    // 渲染分类列表
+    let catHtml = '';
+    categories.forEach(c => {
+        catHtml += `<div class="card" style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-weight:600;">${c.name}</div>
+                <button class="delete-btn" style="display:flex;align-items:center;justify-content:center;" onclick="deleteCategory(${c.id})">×</button>
+            </div>
+        </div>`;
+    });
+    if (!catHtml) catHtml = '<div class="empty">暂无分类</div>';
+    document.getElementById('categoryList').innerHTML = catHtml;
+    
+    // 渲染人员列表
+    let personHtml = '';
+    persons.forEach(p => {
+        personHtml += `<div class="card" style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-weight:600;">${p.name}</div>
+                <button class="delete-btn" style="display:flex;align-items:center;justify-content:center;" onclick="deletePerson(${p.id})">×</button>
+            </div>
+        </div>`;
+    });
+    if (!personHtml) personHtml = '<div class="empty">暂无人员</div>';
+    document.getElementById('personList').innerHTML = personHtml;
+}
+
+async function addCategory() {
+    const name = document.getElementById('newCategoryName').value.trim();
+    if (!name) return alert('请输入分类名称');
+    
+    const { error } = await db.from('categories').insert({ name: name });
+    if (error) return alert('添加失败：' + error.message);
+    
+    await loadData();
+    document.getElementById('newCategoryName').value = '';
+    initAdmin();
+    alert('✅ 添加成功');
+}
+
+async function deleteCategory(id) {
+    if (!confirm('确定删除此分类？')) return;
+    const { error } = await db.from('categories').delete().eq('id', id);
+    if (error) return alert('删除失败：' + error.message);
+    await loadData();
+    initAdmin();
+    alert('✅ 删除成功');
+}
+
+async function addPerson() {
+    const name = document.getElementById('newPersonName').value.trim();
+    if (!name) return alert('请输入人员姓名');
+    
+    const { error } = await db.from('persons').insert({ name: name });
+    if (error) return alert('添加失败：' + error.message);
+    
+    await loadData();
+    document.getElementById('newPersonName').value = '';
+    initAdmin();
+    alert('✅ 添加成功');
+}
+
+async function deletePerson(id) {
+    if (!confirm('确定删除此人员？')) return;
+    const { error } = await db.from('persons').delete().eq('id', id);
+    if (error) return alert('删除失败：' + error.message);
+    await loadData();
+    initAdmin();
+    alert('✅ 删除成功');
 }
 
 function renderParts() {
@@ -568,11 +730,29 @@ function showPartDetail(id) {
     const hist = records.filter(r => r.part_id === id).slice(0, 10);
     
     document.getElementById('detailTitle').textContent = p.name + (p.model ? ' (' + p.model + ')' : '');
+    
+    let alertAdjHtml = '';
+    if (isAdmin) {
+        alertAdjHtml = `
+            <div class="form-group" style="margin-top:12px;">
+                <label class="section-title">⚠️ 警戒库存（管理员可修改）</label>
+                <div class="stepper">
+                    <button class="stepper-btn" onclick="changeAlertStock(${p.id}, ${p.alert_stock}, -1)">−</button>
+                    <span class="stepper-val" id="alertStockVal_${p.id}">${p.alert_stock}</span>
+                    <button class="stepper-btn" onclick="changeAlertStock(${p.id}, ${p.alert_stock}, 1)">+</button>
+                </div>
+            </div>
+            <button class="btn btn-secondary" style="margin-top:8px;" onclick="saveAlertStock(${p.id})">💾 保存警戒值</button>
+        `;
+    }
+    
     document.getElementById('detailContent').innerHTML = `
         <div class="stats-grid">
             <div class="stat-card"><div class="stat-value ${isLow ? 'red' : 'green'}">${p.stock}</div><div class="stat-label">当前库存</div></div>
             <div class="stat-card"><div class="stat-value gold">${p.alert_stock}</div><div class="stat-label">警戒库存</div></div>
         </div>
+        ${alertAdjHtml}
+        <button class="btn btn-secondary" style="margin-top:12px;" onclick="document.getElementById('partDetailModal').classList.remove('active');showCheckoutHistory(${p.id});">📋 查看全部领用记录</button>
         <div class="section-title" style="margin-top:16px;">📋 最近记录</div>
         ${hist.length === 0 ? '<div class="empty">暂无记录</div>' : hist.map(r => `
             <div class="record-item ${r.type}">
@@ -585,6 +765,26 @@ function showPartDetail(id) {
         `).join('')}
     `;
     document.getElementById('partDetailModal').classList.add('active');
+}
+
+function changeAlertStock(partId, current, delta) {
+    const newVal = Math.max(0, current + delta);
+    document.getElementById('alertStockVal_' + partId).textContent = newVal;
+    // 临时更新显示值
+    document.getElementById('alertStockVal_' + partId).dataset.newVal = newVal;
+}
+
+async function saveAlertStock(partId) {
+    const newVal = parseInt(document.getElementById('alertStockVal_' + partId).dataset.newVal) || 
+                   parseInt(document.getElementById('alertStockVal_' + partId).textContent);
+    
+    const { error } = await db.from('parts').update({ alert_stock: newVal }).eq('id', partId);
+    if (error) return alert('保存失败：' + error.message);
+    
+    await loadData();
+    renderHome();
+    alert('✅ 警戒库存已更新为 ' + newVal);
+    showPartDetail(partId);
 }
 
 function initCheckout() {
